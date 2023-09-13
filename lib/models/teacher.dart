@@ -25,12 +25,12 @@ class Teacher {
 
   factory Teacher.fromJson(Map<String, dynamic> json) {
     return Teacher(
-      idProfessor: json['idProfessor'],
+      idProfessor: json['idprofessor'] ?? json['idProfessor'],
       nome: json['nome'],
       email: json['email'],
-      nascimento: json['nascimento'],
-      sexo: json['sexo'],
-      isEstagiario: json['isEstagiario'],
+      nascimento: DateTime.parse(json['nascimento']),
+      sexo: json['sexo'] ?? '',
+      isEstagiario: json['isestagiario'] ?? json['isEstagiario'],
     );
   }
 
@@ -38,7 +38,7 @@ class Teacher {
         'idProfessor': idProfessor,
         'nome': nome,
         'email': email,
-        'nascimento': nascimento,
+        'nascimento': nascimento.toIso8601String(),
         'sexo': sexo,
         'isEstagiario': isEstagiario,
       };

@@ -91,10 +91,11 @@ class _LoginPage extends State<LoginPage> {
               ),
               const SizedBox(height: defaultMarginLarge),
               ButtonPrimary(
-                  hintText: 'entrar',
-                  onPressed: () {
-                    auth(email, password, type);
-                  }),
+                hintText: 'entrar',
+                onPressed: () {
+                  auth(email, password, type);
+                },
+              ),
               const SizedBox(height: defaultMarginSmall),
               Link(
                   hintText: 'esqueceu a senha?',

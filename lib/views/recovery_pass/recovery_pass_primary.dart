@@ -78,13 +78,13 @@ class _RecoveryPassPrimaryPage extends State<RecoveryPassPrimaryPage> {
                   disabled: disabled,
                   onPressed: () {
                     if (email.isEmpty) {
-                      showError('campos inválidos', 'preencha todos os campos!',
+                      showAlert('campos inválidos', 'preencha todos os campos!',
                           'error');
                       return;
                     }
 
                     if (!GetUtils.isEmail(email)) {
-                      showError(
+                      showAlert(
                           'email inválido',
                           'o email informado não é válido, por favor, tente novamente!',
                           'error');

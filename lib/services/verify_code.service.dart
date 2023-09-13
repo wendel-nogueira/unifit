@@ -5,7 +5,7 @@ import 'package:unifit/utils/alert.dart';
 
 Future<void> verifyCode(String code) async {
   if (code.isEmpty) {
-    showError('campos inválidos', 'preencha todos os campos!', 'error');
+    showAlert('campos inválidos', 'preencha todos os campos!', 'error');
     return;
   }
 

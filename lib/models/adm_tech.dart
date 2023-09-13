@@ -15,11 +15,12 @@ class AdmTech {
 
   factory AdmTech.fromJson(Map<String, dynamic> json) {
     return AdmTech(
-      idTecnicoAdministrativo: json['idTecnicoAdministrativo'],
+      idTecnicoAdministrativo:
+          json['idtecnicoadministrativo'] ?? json['idTecnicoAdministrativo'],
       nome: json['nome'],
       email: json['email'],
-      sexo: json['sexo'],
-      nascimento: json['nascimento'],
+      sexo: json['sexo'] ?? '',
+      nascimento: DateTime.parse(json['nascimento']),
     );
   }
 
@@ -28,6 +29,6 @@ class AdmTech {
         'nome': nome,
         'email': email,
         'sexo': sexo,
-        'nascimento': nascimento,
+        'nascimento': nascimento.toIso8601String(),
       };
 }

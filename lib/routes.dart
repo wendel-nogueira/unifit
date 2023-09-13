@@ -1,6 +1,8 @@
 import 'dart:developer';
-
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:unifit/controllers/account_controller.dart';
+import 'package:unifit/views/home_screen.dart';
 import 'package:unifit/views/login_screen.dart';
 import 'package:unifit/views/recovery_pass/recovery_pass_primary.dart';
 import 'package:unifit/views/recovery_pass/recovery_pass_secondary.dart';
@@ -36,6 +38,13 @@ List<GetPage> appRoutes() => [
         transition: Transition.rightToLeftWithFade,
         transitionDuration: transitionDuration,
       ),
+      GetPage(
+        name: '/home',
+        page: () => const HomePage(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        transition: Transition.rightToLeftWithFade,
+        transitionDuration: transitionDuration,
+      ),
     ];
 
 class RouteName extends GetMiddleware {
@@ -43,5 +52,24 @@ class RouteName extends GetMiddleware {
   GetPage? onPageCalled(GetPage? page) {
     log(page?.name.toString() ?? '');
     return super.onPageCalled(page);
+  }
+}
+
+class AuthMiddleware extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) {
+    try {
+      AccountController user = Get.find<AccountController>();
+      bool isAuth = user.isAuth;
+
+      log(user.token.toString());
+      if (isAuth) {
+        return null;
+      } else {
+        return const RouteSettings(name: '/login');
+      }
+    } catch (e) {
+      return const RouteSettings(name: '/login');
+    }
   }
 }
