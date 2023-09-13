@@ -10,7 +10,7 @@ final Map<String, Color> statusColors = {
   'info': statusColorInfo,
 };
 
-showError(String title, String message, String status) => Get.snackbar(
+showAlert(String title, String message, String status) => Get.snackbar(
       title,
       message,
       borderRadius: defaultRadiusSmall,
@@ -37,29 +37,17 @@ showError(String title, String message, String status) => Get.snackbar(
       ),
     );
 
-showSucess(String title, String message) => Get.snackbar(
-      title,
-      message,
-      borderRadius: defaultRadiusSmall,
-      backgroundColor: bgColorWhiteNormal,
-      snackPosition: SnackPosition.TOP,
-      animationDuration: const Duration(milliseconds: 500),
-      titleText: Text(
-        title,
-        style: GoogleFonts.roboto(
-          color: statusColorError,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
+showLoading() => Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          color: fontColorWhite,
+          backgroundColor: bgColorBlueLightSecondary,
         ),
-        textAlign: TextAlign.center,
       ),
-      messageText: Text(
-        message,
-        style: GoogleFonts.manrope(
-          color: fontColorGray,
-          fontSize: 16,
-          fontWeight: FontWeight.w300,
-        ),
-        textAlign: TextAlign.center,
-      ),
+      barrierDismissible: true,
+      name: 'loading',
+      barrierColor: Colors.black.withOpacity(0.5),
+      arguments: 'loading',
     );
+
+hideLoading() => Get.back(closeOverlays: true);

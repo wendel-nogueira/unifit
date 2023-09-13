@@ -27,17 +27,17 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      idAluno: json['idAluno'],
+      idAluno: json['idaluno'] ?? json['idAluno'],
       matricula: json['matricula'],
       nome: json['nome'],
       email: json['email'],
       curso: json['curso'],
-      nascimento: json['nascimento'],
-      objetivo: json['objetivo'],
-      anoIngresso: json['anoIngresso'],
-      etnia: json['etnia'],
-      sexo: json['sexo'],
-      observacao: json['observacao'],
+      nascimento: DateTime.parse(json['nascimento']),
+      objetivo: json['objetivo'] ?? '',
+      anoIngresso: json['ano_ingresso'] ?? json['anoIngresso'],
+      etnia: json['etnia'] ?? '',
+      sexo: json['sexo'] ?? '',
+      observacao: json['observacao'] ?? '',
     );
   }
 
@@ -47,7 +47,7 @@ class User {
         'nome': nome,
         'email': email,
         'curso': curso,
-        'nascimento': nascimento,
+        'nascimento': nascimento.toIso8601String(),
         'objetivo': objetivo,
         'anoIngresso': anoIngresso,
         'etnia': etnia,
