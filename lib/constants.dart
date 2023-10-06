@@ -27,6 +27,8 @@ const statusColorInfoDark = Color.fromRGBO(15, 76, 129, 1);
 const double defaultPadding = 24.0;
 const double defaultPaddingFieldsVertical = 8.0;
 const double defaultPaddingFieldsHorizontal = 12.0;
+const double defaultPaddingCardHorizontal = 24.0;
+const double defaultPaddingCardVertical = 12.0;
 
 const double defaultMarginSmall = 6.0;
 const double defaultMarginMedium = 8.0;

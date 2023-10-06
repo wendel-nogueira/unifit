@@ -2,13 +2,20 @@ import 'dart:developer';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:unifit/controllers/account_controller.dart';
+import 'package:unifit/utils/alert.dart';
 import 'package:unifit/views/home_screen.dart';
 import 'package:unifit/views/login_screen.dart';
+import 'package:unifit/views/new_anamnesis/new_anamnesis_screen.dart';
+import 'package:unifit/views/new_physical_assessment/new_physical_assessment_screen.dart';
+import 'package:unifit/views/physical_assessment_list/physical_assessment_list_screen.dart';
 import 'package:unifit/views/recovery_pass/recovery_pass_primary.dart';
 import 'package:unifit/views/recovery_pass/recovery_pass_secondary.dart';
 import 'package:unifit/views/recovery_pass/recovery_pass_tertiary.dart';
+import 'package:unifit/views/user_list/user_list_screen.dart';
+import 'package:unifit/views/user_profile/user_profile_screen.dart';
+import 'package:unifit/views/view_physical_assessment/view_physical_assessment.dart';
 
-const transitionDuration = Duration(milliseconds: 300);
+const transitionDuration = Duration(milliseconds: 500);
 
 List<GetPage> appRoutes() => [
       GetPage(
@@ -42,8 +49,51 @@ List<GetPage> appRoutes() => [
         name: '/home',
         page: () => const HomePage(),
         middlewares: [AuthMiddleware(), RouteName()],
-        transition: Transition.rightToLeftWithFade,
-        transitionDuration: transitionDuration,
+        //transition: Transition.rightToLeftWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/students-list',
+        page: () => const UserListScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/profile',
+        page: () => const UserProfileScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/user-physical-assessments/:id',
+        page: () => const PhysicalAssessmentList(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/view-physical-assessments',
+        page: () => const ViewPhysicalAssessmentScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/new-physical-assessments/:id',
+        page: () => const NewPhysicalAssessmentScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/new-user-anamnesis/:id',
+        page: () => const NewAnamnesisScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
       ),
     ];
 
@@ -66,6 +116,12 @@ class AuthMiddleware extends GetMiddleware {
       if (isAuth) {
         return null;
       } else {
+        showAlert(
+          'Sessão expirada',
+          'Sua sessão expirou, por favor faça login novamente.',
+          'error',
+        );
+
         return const RouteSettings(name: '/login');
       }
     } catch (e) {

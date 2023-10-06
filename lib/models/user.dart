@@ -1,3 +1,6 @@
+import 'package:unifit/models/anamnesis.dart';
+import 'package:unifit/models/assessment.dart';
+
 class User {
   int idAluno;
   String matricula;
@@ -10,6 +13,8 @@ class User {
   String etnia;
   String sexo;
   String observacao;
+  List<Assessment> assessments = [];
+  Anamnesis anamnesis = Anamnesis();
 
   User({
     required this.idAluno,
