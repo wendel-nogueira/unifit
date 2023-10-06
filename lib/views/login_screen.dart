@@ -6,7 +6,9 @@ import 'package:unifit/components/input.dart';
 import 'package:unifit/components/link.dart';
 import 'package:unifit/components/radio.dart';
 import 'package:unifit/constants.dart';
+import 'package:unifit/controllers/account_controller.dart';
 import 'package:unifit/services/auth.service.dart';
+import 'package:unifit/utils/verify_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +25,15 @@ class _LoginPage extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+
+    Get.lazyPut<AccountController>(() => AccountController());
+
+    verifyAuth();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

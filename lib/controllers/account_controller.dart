@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unifit/models/user.dart';
 import 'package:unifit/models/teacher.dart';
 import 'package:unifit/models/adm_tech.dart';
@@ -37,6 +38,13 @@ class AccountController extends GetxController
     user = null;
     teacher = null;
     admtech = null;
+
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('token');
+      prefs.remove('type');
+      prefs.remove('user');
+      prefs.clear();
+    });
 
     Get.offNamed('/login');
   }

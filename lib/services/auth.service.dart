@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,20 +75,30 @@ Future<void> auth(String email, String password, int type) async {
     showAlert('sucesso', 'autenticação realizada com sucesso!', 'success');
 
     Get.put(accountController);
-    Get.offAllNamed('/home');
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.clear();
     prefs.setString('token', accountController.token!);
     prefs.setInt('type', accountController.type!);
+    prefs.setString(
+        'user',
+        json.encode(
+          accountController.user != null
+              ? accountController.user!.toJson()
+              : accountController.teacher != null
+                  ? accountController.teacher!.toJson()
+                  : accountController.admtech!.toJson(),
+        ));
+
+    Get.put<SharedPreferences>(prefs);
 
     if (type == 0) {
-      prefs.setString('user', json.encode(accountController.user?.toJson()));
+      Get.offAllNamed('/home');
     } else if (type == 1) {
-      prefs.setString(
-          'teacher', json.encode(accountController.teacher?.toJson()));
+      Get.offAllNamed('/students-list');
     } else if (type == 2) {
-      prefs.setString(
-          'admtech', json.encode(accountController.admtech?.toJson()));
+      print('admtech');
     }
 
     return;
