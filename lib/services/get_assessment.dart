@@ -35,7 +35,7 @@ Future<List<Assessment>> getAssessment(String token, int studentId) async {
       assessments.add(Assessment.fromJson(element));
     });
 
-    return assessments;
+    return assessments.reversed.toList();
   } else if (json.decode(response.body)['message'] ==
       'Token de autenticação inválido') {
     showAlert('sessão expirada',

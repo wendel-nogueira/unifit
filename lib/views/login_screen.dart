@@ -114,41 +114,44 @@ class _LoginPage extends State<LoginPage> {
                     Get.toNamed('/recovery-pass-primary');
                   }),
               const SizedBox(height: defaultMarginLarger),
-              Row(
-                verticalDirection: VerticalDirection.down,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RadioCustom(
-                    hintText: types[0],
-                    checked: type == 0,
-                    onChanged: () {
-                      setState(() {
-                        type = 0;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: defaultMarginSmall),
-                  RadioCustom(
-                    hintText: types[1],
-                    checked: type == 1,
-                    onChanged: () {
-                      setState(() {
-                        type = 1;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: defaultMarginSmall),
-                  RadioCustom(
-                    hintText: types[2],
-                    checked: type == 2,
-                    onChanged: () {
-                      setState(() {
-                        type = 2;
-                      });
-                    },
-                  ),
-                ],
-              )
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  verticalDirection: VerticalDirection.down,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RadioCustom(
+                      hintText: types[0],
+                      checked: type == 0,
+                      onChanged: () {
+                        setState(() {
+                          type = 0;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: defaultMarginSmall),
+                    RadioCustom(
+                      hintText: types[1],
+                      checked: type == 1,
+                      onChanged: () {
+                        setState(() {
+                          type = 1;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: defaultMarginSmall),
+                    RadioCustom(
+                      hintText: types[2],
+                      checked: type == 2,
+                      onChanged: () {
+                        setState(() {
+                          type = 2;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

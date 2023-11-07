@@ -41,6 +41,8 @@ class _InputPrimaryState extends State<InputPrimary> {
     'phone': TextInputType.phone,
     'password': TextInputType.visiblePassword,
     'multiline': TextInputType.multiline,
+    'date': TextInputType.datetime,
+    'checkbox': TextInputType.text,
   };
 
   @override
@@ -79,60 +81,67 @@ class _InputPrimaryState extends State<InputPrimary> {
             ),
           ),
           const SizedBox(height: defaultMarginMedium),
-          TextField(
-            keyboardType: types[widget.type],
-            obscureText: _obscured,
-            style: GoogleFonts.manrope(
-              color: fontColorGray,
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-            ),
-            decoration: InputDecoration(
-              floatingLabelBehavior: FloatingLabelBehavior.never,
-              isDense: true,
-              hintStyle: GoogleFonts.manrope(
-                color: fontColorGray,
-                fontSize: 16,
-                fontWeight: FontWeight.w300,
-              ),
-              filled: true,
-              fillColor: bgColorWhiteNormal,
-              hintText: widget.hintText,
-              border: const OutlineInputBorder(
-                borderRadius: borderRadiusSmall,
-                borderSide: BorderSide(
-                  width: 0,
-                  style: BorderStyle.none,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: defaultPaddingFieldsVertical,
-                  horizontal: defaultPaddingFieldsHorizontal),
-              suffixIcon: widget.type == 'password'
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                          0, 0, defaultPaddingFieldsHorizontal, 0),
-                      child: GestureDetector(
-                        onTap: _toggleObscured,
-                        child: Icon(
-                          _obscured
-                              ? Icons.visibility_rounded
-                              : Icons.visibility_off_rounded,
-                          size: 16,
-                          color: bgColorBlueLightSecondary,
-                        ),
+          widget.type != 'checkbox'
+              ? TextField(
+                  keyboardType: types[widget.type],
+                  obscureText: _obscured,
+                  style: GoogleFonts.manrope(
+                    color: fontColorGray,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    isDense: true,
+                    hintStyle: GoogleFonts.manrope(
+                      color: fontColorGray,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    filled: true,
+                    fillColor: bgColorWhiteNormal,
+                    hintText: widget.hintText,
+                    border: const OutlineInputBorder(
+                      borderRadius: borderRadiusSmall,
+                      borderSide: BorderSide(
+                        width: 0,
+                        style: BorderStyle.none,
                       ),
-                    )
-                  : null,
-              suffixIconConstraints: const BoxConstraints(
-                maxHeight: 24,
-                maxWidth: 24,
-              ),
-            ),
-            onChanged: (value) {
-              widget.onChanged(value);
-            },
-          ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: defaultPaddingFieldsVertical,
+                        horizontal: defaultPaddingFieldsHorizontal),
+                    suffixIcon: widget.type == 'password'
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                0, 0, defaultPaddingFieldsHorizontal, 0),
+                            child: GestureDetector(
+                              onTap: _toggleObscured,
+                              child: Icon(
+                                _obscured
+                                    ? Icons.visibility_rounded
+                                    : Icons.visibility_off_rounded,
+                                size: 16,
+                                color: bgColorBlueLightSecondary,
+                              ),
+                            ),
+                          )
+                        : null,
+                    suffixIconConstraints: const BoxConstraints(
+                      maxHeight: 24,
+                      maxWidth: 24,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    widget.onChanged(value);
+                  },
+                )
+              : Checkbox(
+                  value: widget.type == 'checkbox' ? true : false,
+                  onChanged: (value) {
+                    widget.onChanged(value);
+                  },
+                ),
           const SizedBox(height: defaultMarginMedium),
         ],
       ),

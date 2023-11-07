@@ -15,7 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePage extends State<HomePage> {
   final _text = const <int, String>{
-    0: 'meus planos',
+    0: 'minhas fichas',
     1: 'alunos cadastrados',
   };
 

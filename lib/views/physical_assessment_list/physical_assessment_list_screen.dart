@@ -78,15 +78,20 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    var accountController = Get.find<AccountController>();
+    var accountType = accountController.type!;
 
     return MasterPage(
-      title: 'avaliações',
+      title: accountType == 0 ? 'minhas avaliações' : 'avaliações',
       showMenu: false,
+      backButtonFunction:
+          accountType == 0 ? () => Get.toNamed('/my-sheets') : () => Get.back(),
       child: Column(
         children: [
           Container(
-            width: double.infinity,
+            width: width - 2 * defaultPadding,
             margin: const EdgeInsets.only(bottom: defaultPadding),
             padding: const EdgeInsets.symmetric(
               horizontal: defaultPaddingCardHorizontal,
@@ -97,13 +102,7 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
               borderRadius: BorderRadius.all(
                 Radius.circular(defaultRadiusMedium),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
-                ),
-              ],
+              boxShadow: [boxShadowDefault],
             ),
             child: !loadingStudent
                 ? Column(
@@ -155,6 +154,7 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
                   ),
           ),
           Container(
+            width: width - 2 * defaultPadding,
             margin: const EdgeInsets.only(bottom: defaultPadding / 2),
             child: const Divider(
               color: bgColorWhiteDark,
@@ -162,28 +162,33 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
               thickness: 1,
             ),
           ),
-          TextButton(
-            onPressed: () => {
-              Get.toNamed('/new-physical-assessments/$studentId'),
-            },
-            style: ButtonStyle(
-              backgroundColor:
-                  MaterialStateProperty.all<Color>(statusColorSuccess),
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: Text(
-                'nova avaliação',
-                style: GoogleFonts.roboto(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  color: fontColorWhite,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          const SizedBox(height: defaultPadding),
+          accountType == 1
+              ? SizedBox(
+                  width: width - 2 * defaultPadding,
+                  child: TextButton(
+                    onPressed: () => {
+                      Get.toNamed('/new-physical-assessments/$studentId'),
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(statusColorSuccess),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        'nova avaliação',
+                        style: GoogleFonts.roboto(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: fontColorWhite,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                )
+              : Container(),
+          const SizedBox(height: defaultPadding / 2),
           !loadingAssessments
               ? SizedBox(
                   height: height - 310, // fixed height
@@ -192,21 +197,16 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
                     itemBuilder: (context, index) {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
+                            width: width - 2 * defaultPadding,
                             decoration: const BoxDecoration(
                               color: bgColorWhiteNormal,
                               borderRadius: BorderRadius.all(
                                 Radius.circular(defaultRadiusSmall),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
+                              boxShadow: [boxShadowDefault],
                             ),
                             margin: const EdgeInsets.only(
                                 bottom: defaultPadding / 2),

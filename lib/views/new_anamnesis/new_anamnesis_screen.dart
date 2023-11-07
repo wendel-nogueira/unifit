@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,11 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
   Anamnesis anamnesis = Anamnesis();
   bool loadingStudent = true;
   bool loadingAnamnesis = true;
+
+  var accountController = Get.find<AccountController>();
+  bool loading = false;
+
+  bool newAnamnesis = false;
 
   @override
   void initState() {
@@ -108,17 +114,80 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
     return true;
   }
 
+  void newAnamnesisForm() {
+    var formFields = anamnesis.getFormFields();
+
+    setState(() {
+      loadingAnamnesis = true;
+      newAnamnesis = true;
+
+      for (var field in formFields) {
+        anamnesis.updateValue(field['atribute'], '');
+      }
+
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          loadingAnamnesis = false;
+        });
+      });
+    });
+  }
+
+  void loadingAnamnesisData() {
+    setState(() {
+      loadingAnamnesis = true;
+    });
+
+    getAnamnesis(accountController.token!, studentId).then(
+      (value) => {
+        if (mounted)
+          setState(
+            () {
+              anamnesis = value;
+              loadingAnamnesis = false;
+              newAnamnesis = false;
+            },
+          ),
+      },
+    );
+  }
+
+  void sendRequest() {
+    if (validateForm() && !loading) {
+      setState(() {
+        loading = true;
+      });
+
+      createAnamnesis(accountController.token!, anamnesis, studentId)
+          .then((value) {
+        setState(() {
+          loading = false;
+        });
+
+        if (value == 200) {
+          Get.back();
+        }
+      }).catchError((error) {
+        setState(() {
+          loading = false;
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    var accountController = Get.find<AccountController>();
+    var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var fields = anamnesis.getFormFields();
 
     return MasterPage(
       title: 'anamnese',
       showMenu: false,
+      backButtonFunction: () => Get.toNamed('/students-list'),
       child: Container(
-        width: double.infinity,
+        width: width - 2 * defaultPadding,
+        height: height - 2 * defaultPadding - 64,
         margin: const EdgeInsets.only(bottom: defaultPadding),
         padding: const EdgeInsets.symmetric(
           horizontal: defaultPaddingCardHorizontal,
@@ -129,13 +198,7 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
           borderRadius: BorderRadius.all(
             Radius.circular(defaultRadiusMedium),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, 5),
-            ),
-          ],
+          boxShadow: [boxShadowDefault],
         ),
         child: !loadingStudent
             ? Column(
@@ -183,6 +246,30 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                   ),
                   // divider
                   const SizedBox(height: 12),
+                  !newAnamnesis
+                      ? TextButton(
+                          onPressed: () => {
+                            newAnamnesisForm(),
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                statusColorInfo),
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              'nova anamnese',
+                              style: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                                color: fontColorWhite,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : const SizedBox(),
+                  const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
                     height: 1,
@@ -193,7 +280,9 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                       ? Column(
                           children: <Widget>[
                             SizedBox(
-                              height: height - 260, // fixed height
+                              height: newAnamnesis
+                                  ? height - 268
+                                  : height - 316, // fixed height
                               child: ListView.builder(
                                 itemCount: fields.length,
                                 itemBuilder: (context, index) {
@@ -202,6 +291,8 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      const SizedBox(
+                                          height: defaultMarginLarge),
                                       Text(
                                         fields[index]['label'],
                                         style: GoogleFonts.roboto(
@@ -221,8 +312,9 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                               style: GoogleFonts.manrope(
                                                 color: fontColorGray,
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w300,
+                                                fontWeight: FontWeight.w400,
                                               ),
+                                              readOnly: !newAnamnesis,
                                               decoration: InputDecoration(
                                                 floatingLabelBehavior:
                                                     FloatingLabelBehavior.never,
@@ -230,20 +322,25 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                                 hintStyle: GoogleFonts.manrope(
                                                   color: fontColorGray,
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.w300,
+                                                  fontWeight: FontWeight.w400,
                                                 ),
                                                 filled: true,
-                                                fillColor: bgColorWhiteDark,
+                                                fillColor: bgColorWhiteLight,
                                                 hintText: fields[index]
                                                     ['label'],
-                                                border:
+                                                enabledBorder:
                                                     const OutlineInputBorder(
                                                   borderRadius:
                                                       borderRadiusSmall,
                                                   borderSide: BorderSide(
-                                                    width: 0,
-                                                    style: BorderStyle.none,
-                                                  ),
+                                                      color: bgColorWhiteDark),
+                                                ),
+                                                focusedBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorBlueNormal),
                                                 ),
                                                 contentPadding: const EdgeInsets
                                                         .symmetric(
@@ -252,13 +349,16 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                                     horizontal:
                                                         defaultPaddingFieldsHorizontal),
                                               ),
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  anamnesis.updateValue(
-                                                      fields[index]['atribute'],
-                                                      value);
-                                                });
-                                              },
+                                              onChanged: newAnamnesis
+                                                  ? (value) {
+                                                      setState(() {
+                                                        anamnesis.updateValue(
+                                                            fields[index]
+                                                                ['atribute'],
+                                                            value);
+                                                      });
+                                                    }
+                                                  : null,
                                             )
                                           : DropdownButtonFormField(
                                               decoration: InputDecoration(
@@ -268,20 +368,25 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                                 hintStyle: GoogleFonts.manrope(
                                                   color: fontColorGray,
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.w300,
+                                                  fontWeight: FontWeight.w400,
                                                 ),
                                                 filled: true,
-                                                fillColor: bgColorWhiteDark,
+                                                fillColor: bgColorWhiteLight,
                                                 hintText: fields[index]
                                                     ['label'],
-                                                border:
+                                                enabledBorder:
                                                     const OutlineInputBorder(
                                                   borderRadius:
                                                       borderRadiusSmall,
                                                   borderSide: BorderSide(
-                                                    width: 0,
-                                                    style: BorderStyle.none,
-                                                  ),
+                                                      color: bgColorWhiteDark),
+                                                ),
+                                                focusedBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorBlueNormal),
                                                 ),
                                                 contentPadding: const EdgeInsets
                                                         .symmetric(
@@ -310,37 +415,30 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                                       fields[index]['atribute'],
                                                       value);
                                                 });
-                                              }),
+                                              },
+                                            ),
                                       if (index == fields.length - 1)
                                         const SizedBox(
                                             height: defaultMarginLarger),
-                                      if (index == fields.length - 1)
+                                      if (index == fields.length - 1 &&
+                                          newAnamnesis)
                                         TextButton(
                                           onPressed: () => {
-                                            if (validateForm())
-                                              {
-                                                createAnamnesis(
-                                                        accountController
-                                                            .token!,
-                                                        anamnesis,
-                                                        studentId)
-                                                    .then((value) {
-                                                  if (value == 200) {
-                                                    Get.back();
-                                                  }
-                                                })
-                                              },
+                                            sendRequest(),
                                           },
                                           style: ButtonStyle(
                                             backgroundColor:
-                                                MaterialStateProperty.all<
-                                                        Color>(
-                                                    bgColorBlueLightSecondary),
+                                                MaterialStateProperty
+                                                    .all<Color>(loading
+                                                        ? bgColorGray
+                                                        : statusColorSuccess),
                                           ),
                                           child: SizedBox(
                                             width: double.infinity,
                                             child: Text(
-                                              'salvar anamnese',
+                                              loading
+                                                  ? 'salvando...'
+                                                  : 'salvar',
                                               style: GoogleFonts.roboto(
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 16,
@@ -350,11 +448,11 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                                             ),
                                           ),
                                         ),
-                                      if (index == fields.length - 1)
+                                      if (index == fields.length - 1 &&
+                                          newAnamnesis)
                                         TextButton(
-                                          onPressed: () => {
-                                            Get.back(),
-                                          },
+                                          onPressed: () =>
+                                              {loadingAnamnesisData()},
                                           style: ButtonStyle(
                                             backgroundColor:
                                                 MaterialStateProperty.all<

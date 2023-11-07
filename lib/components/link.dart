@@ -21,7 +21,7 @@ class Link extends StatelessWidget {
           style: GoogleFonts.roboto(
             color: fontColorWhite,
             fontSize: 14,
-            fontWeight: FontWeight.w300,
+            fontWeight: FontWeight.w400,
             decoration: TextDecoration.underline,
           ),
           textAlign: TextAlign.right,
