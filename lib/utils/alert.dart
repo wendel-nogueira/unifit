@@ -31,7 +31,7 @@ showAlert(String title, String message, String status) => Get.snackbar(
         style: GoogleFonts.manrope(
           color: fontColorGray,
           fontSize: 16,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
         ),
         textAlign: TextAlign.center,
       ),
@@ -44,7 +44,7 @@ showLoading() => Get.dialog(
           backgroundColor: bgColorBlueLightSecondary,
         ),
       ),
-      barrierDismissible: true,
+      barrierDismissible: false,
       name: 'loading',
       barrierColor: Colors.black.withOpacity(0.5),
       arguments: 'loading',

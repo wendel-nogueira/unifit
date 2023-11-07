@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:unifit/controllers/account_controller.dart';
 import 'package:unifit/models/assessment.dart';
 
 import '../../components/page.dart';
@@ -46,6 +45,7 @@ class _ViewPhysicalAssessmentScreen
 
   @override
   Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var fields = assessment.getFormFields();
 
@@ -53,6 +53,7 @@ class _ViewPhysicalAssessmentScreen
       title: 'avaliação #${assessment.id}',
       showMenu: false,
       child: SizedBox(
+        width: width - 2 * defaultPadding,
         height: height - 80, // fixed height
         child: ListView.builder(
           itemCount: fields.length,
@@ -61,6 +62,7 @@ class _ViewPhysicalAssessmentScreen
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: defaultMarginLarge),
                 Text(
                   fields[index]['label'],
                   style: GoogleFonts.roboto(
@@ -79,7 +81,7 @@ class _ViewPhysicalAssessmentScreen
                   style: GoogleFonts.manrope(
                     color: fontColorGray,
                     fontSize: 16,
-                    fontWeight: FontWeight.w300,
+                    fontWeight: FontWeight.w400,
                   ),
                   decoration: InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -87,17 +89,18 @@ class _ViewPhysicalAssessmentScreen
                     hintStyle: GoogleFonts.manrope(
                       color: fontColorGray,
                       fontSize: 16,
-                      fontWeight: FontWeight.w300,
+                      fontWeight: FontWeight.w400,
                     ),
                     filled: true,
-                    fillColor: bgColorWhiteDark,
+                    fillColor: bgColorWhiteNormal,
                     hintText: fields[index]['label'],
-                    border: const OutlineInputBorder(
+                    enabledBorder: const OutlineInputBorder(
                       borderRadius: borderRadiusSmall,
-                      borderSide: BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: BorderSide(color: bgColorWhiteDark),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderRadius: borderRadiusSmall,
+                      borderSide: BorderSide(color: bgColorWhiteDark),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                         vertical: defaultPaddingFieldsVertical,

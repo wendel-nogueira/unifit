@@ -28,7 +28,7 @@ verifyAuth() async {
         tokenIsValid) {
       if (type == 0) {
         Get.find<AccountController>().user = User.fromJson(json.decode(user));
-        Get.offNamed('/home');
+        Get.offNamed('/my-sheets');
       } else if (type == 1) {
         Get.find<AccountController>().teacher =
             Teacher.fromJson(json.decode(user));
@@ -36,6 +36,7 @@ verifyAuth() async {
       } else if (type == 2) {
         Get.find<AccountController>().admtech =
             AdmTech.fromJson(json.decode(user));
+        Get.offNamed('/students-list');
       }
     }
   });

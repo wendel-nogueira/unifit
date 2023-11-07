@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:unifit/models/assessment.dart';
-import 'package:unifit/services/create_anamnesis.dart';
 import 'package:unifit/services/create_assessment.dart';
 import 'package:unifit/utils/alert.dart';
 
 import '../../components/page.dart';
 import '../../constants.dart';
 import '../../controllers/account_controller.dart';
-import '../../services/get_students.dart';
 
 class NewPhysicalAssessmentScreen extends StatefulWidget {
   const NewPhysicalAssessmentScreen({super.key});
@@ -23,6 +21,9 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
   int studentId = -1;
   Assessment assessment = Assessment();
   bool loadingStudent = true;
+
+  var accountController = Get.find<AccountController>();
+  bool loading = false;
 
   @override
   void initState() {
@@ -78,11 +79,120 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
     return true;
   }
 
+  void sendRequest() {
+    var width = MediaQuery.of(context).size.width;
+    var dialogSize = width - 2 * defaultPadding;
+
+    if (dialogSize > 380) {
+      dialogSize = 380;
+    }
+
+    if (validateForm() && !loading) {
+      setState(() {
+        loading = true;
+      });
+
+      createAssessment(accountController.token!, assessment, studentId)
+          .then((value) {
+        setState(() {
+          loading = false;
+        });
+
+        if (value == 200) {
+          Get.dialog(
+            Center(
+              child: Container(
+                width: dialogSize,
+                height: 187,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(defaultPadding),
+                decoration: const BoxDecoration(
+                  color: bgColorWhiteNormal,
+                  borderRadius: borderRadiusSmall,
+                  boxShadow: [boxShadowDefault],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'deseja criar uma nova anamnese?',
+                      style: GoogleFonts.manrope(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: fontColorGray,
+                        textStyle: const TextStyle(
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: () => {
+                        Get.toNamed(
+                          '/new-user-anamnesis/${studentId.toString()}',
+                        ),
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            bgColorBlueLightSecondary),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          'sim',
+                          style: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: fontColorWhite,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => {
+                        Get.toNamed(
+                          '/user-physical-assessments/${studentId.toString()}',
+                        ),
+                      },
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(statusColorError),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          'não',
+                          style: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: fontColorWhite,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // remove the dialog when clicking outside
+            barrierDismissible: false,
+          );
+        }
+      }).catchError((error) {
+        setState(() {
+          loading = false;
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var fields = assessment.getFormFields();
-    var accountController = Get.find<AccountController>();
 
     return MasterPage(
       title: 'nova avaliação',
@@ -91,6 +201,7 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
         children: <Widget>[
           !loadingStudent
               ? SizedBox(
+                  width: width - 2 * defaultPadding,
                   height: height - 80, // fixed height
                   child: ListView.builder(
                     itemCount: fields.length,
@@ -99,6 +210,7 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: defaultMarginLarge),
                           Text(
                             fields[index]['label'],
                             style: GoogleFonts.roboto(
@@ -117,7 +229,7 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                             style: GoogleFonts.manrope(
                               color: fontColorGray,
                               fontSize: 16,
-                              fontWeight: FontWeight.w300,
+                              fontWeight: FontWeight.w400,
                             ),
                             decoration: InputDecoration(
                               floatingLabelBehavior:
@@ -126,17 +238,19 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                               hintStyle: GoogleFonts.manrope(
                                 color: fontColorGray,
                                 fontSize: 16,
-                                fontWeight: FontWeight.w300,
+                                fontWeight: FontWeight.w400,
                               ),
                               filled: true,
-                              fillColor: bgColorWhiteDark,
+                              fillColor: bgColorWhiteNormal,
                               hintText: fields[index]['label'],
-                              border: const OutlineInputBorder(
+                              enabledBorder: const OutlineInputBorder(
                                 borderRadius: borderRadiusSmall,
-                                borderSide: BorderSide(
-                                  width: 0,
-                                  style: BorderStyle.none,
-                                ),
+                                borderSide: BorderSide(color: bgColorWhiteDark),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderRadius: borderRadiusSmall,
+                                borderSide:
+                                    BorderSide(color: bgColorBlueNormal),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: defaultPaddingFieldsVertical,
@@ -153,27 +267,17 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                             const SizedBox(height: defaultMarginLarger),
                           if (index == fields.length - 1)
                             TextButton(
-                              onPressed: () => {
-                                if (validateForm())
-                                  {
-                                    createAssessment(accountController.token!,
-                                            assessment, studentId)
-                                        .then((value) {
-                                      if (value == 200) {
-                                        Get.back();
-                                      }
-                                    })
-                                  }
-                              },
+                              onPressed: () => {sendRequest()},
                               style: ButtonStyle(
                                 backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        statusColorSuccess),
+                                    MaterialStateProperty.all<Color>(loading
+                                        ? bgColorGray
+                                        : statusColorSuccess),
                               ),
                               child: SizedBox(
                                 width: double.infinity,
                                 child: Text(
-                                  'salvar',
+                                  loading ? 'salvando...' : 'salvar',
                                   style: GoogleFonts.roboto(
                                     fontWeight: FontWeight.w500,
                                     fontSize: 16,

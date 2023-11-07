@@ -94,11 +94,11 @@ Future<void> auth(String email, String password, int type) async {
     Get.put<SharedPreferences>(prefs);
 
     if (type == 0) {
-      Get.offAllNamed('/home');
+      Get.offAllNamed('/my-sheets');
     } else if (type == 1) {
       Get.offAllNamed('/students-list');
     } else if (type == 2) {
-      print('admtech');
+      Get.offAllNamed('/students-list');
     }
 
     return;

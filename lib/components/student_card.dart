@@ -38,32 +38,36 @@ class _StudentCard extends State<StudentCard> {
         decoration: const BoxDecoration(
           color: bgColorWhiteNormal,
           borderRadius: borderRadiusMedium,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
+          boxShadow: [boxShadowDefault],
         ),
         width: cardWidth,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              widget.registration,
-              style: GoogleFonts.manrope(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: fontColorBlue,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.registration,
+                  style: GoogleFonts.manrope(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: fontColorBlue,
+                  ),
+                ),
+                const Icon(
+                  Icons.more_vert,
+                  color: fontColorBlue,
+                  size: 16,
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Text(
               'nome: ${widget.name}',
               style: GoogleFonts.manrope(
-                fontWeight: FontWeight.w300,
+                fontWeight: FontWeight.w400,
                 fontSize: 14,
                 color: fontColorGray,
               ),
@@ -72,7 +76,7 @@ class _StudentCard extends State<StudentCard> {
             Text(
               'curso: ${widget.course}',
               style: GoogleFonts.manrope(
-                fontWeight: FontWeight.w300,
+                fontWeight: FontWeight.w400,
                 fontSize: 14,
                 color: fontColorGray,
               ),
@@ -81,7 +85,7 @@ class _StudentCard extends State<StudentCard> {
             Text(
               'nascimento: $birthDate',
               style: GoogleFonts.manrope(
-                fontWeight: FontWeight.w300,
+                fontWeight: FontWeight.w400,
                 fontSize: 14,
                 color: fontColorGray,
               ),

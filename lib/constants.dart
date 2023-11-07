@@ -53,4 +53,11 @@ const borderRadiusLarger =
 final titleFont = GoogleFonts.roboto(fontWeight: FontWeight.bold);
 final subtitleFont = GoogleFonts.roboto(fontWeight: FontWeight.w500);
 final paragraphFont = GoogleFonts.manrope(fontWeight: FontWeight.normal);
-final descriptionFont = GoogleFonts.manrope(fontWeight: FontWeight.w300);
+final descriptionFont = GoogleFonts.manrope(fontWeight: FontWeight.w400);
+
+const boxShadowDefault = BoxShadow(
+  offset: Offset(4, 4),
+  blurRadius: 10,
+  spreadRadius: 0,
+  color: Color.fromARGB(10, 0, 0, 0),
+);

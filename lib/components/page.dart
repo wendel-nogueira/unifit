@@ -13,7 +13,8 @@ class MasterPage extends StatefulWidget {
       this.showBackButton = true,
       this.showHeader = true,
       this.usePadding = true,
-      this.showMenu = true});
+      this.showMenu = true,
+      this.backButtonFunction});
 
   final Widget child;
   final String title;
@@ -22,6 +23,7 @@ class MasterPage extends StatefulWidget {
   final bool showHeader;
   final bool usePadding;
   final bool showMenu;
+  final Function? backButtonFunction;
 
   @override
   State<MasterPage> createState() => _MasterPage();
@@ -31,19 +33,23 @@ class _MasterPage extends State<MasterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: widget.usePadding
-            ? const EdgeInsets.only(
-                left: defaultPadding,
-                right: defaultPadding,
-              )
-            : null,
-        alignment: Alignment.topCenter,
-        child: widget.child,
+      backgroundColor: bgColorWhiteLight,
+      body: SingleChildScrollView(
+        child: Container(
+          color: bgColorWhiteLight,
+          // padding: widget.usePadding
+          //     ? const EdgeInsets.only(
+          //         left: defaultPadding,
+          //         right: defaultPadding,
+          //       )
+          //     : null,
+          alignment: Alignment.topCenter,
+          child: widget.child,
+        ),
       ),
       appBar: widget.showHeader
           ? AppBar(
-              backgroundColor: bgColorWhiteNormal,
+              backgroundColor: bgColorWhiteLight,
               elevation: 0,
               title: Text(
                 widget.title,
@@ -60,15 +66,18 @@ class _MasterPage extends State<MasterPage> {
                         Icons.arrow_back_ios,
                         color: fontColorBlue,
                       ),
-                      onPressed: () => Get.back(),
+                      onPressed: () => widget.backButtonFunction != null
+                          ? widget.backButtonFunction!()
+                          : Get.back(),
                     )
-                  : null,
+                  : const SizedBox(),
             )
           : null,
       bottomNavigationBar: widget.showMenu
           ? Container(
               height: 64,
               alignment: Alignment.bottomCenter,
+              color: bgColorWhiteLight,
               child: Menu(accountType: widget.type),
             )
           : null,

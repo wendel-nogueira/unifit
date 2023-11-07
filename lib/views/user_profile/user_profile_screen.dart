@@ -33,6 +33,12 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
 
+    var nome = type == 0 ? user!.nome.toString() : teacher!.nome.toString();
+
+    if (nome.length > 10) {
+      nome = '${nome.substring(0, 10)}...';
+    }
+
     return MasterPage(
       title: 'perfil',
       showBackButton: false,
@@ -40,7 +46,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
       usePadding: false,
       child: SizedBox(
         width: width,
-        height: height,
+        height: height - 64,
         child: Column(
           children: [
             Container(
@@ -57,16 +63,10 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                   ],
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+                  bottomLeft: Radius.circular(defaultRadiusLarger),
+                  bottomRight: Radius.circular(defaultRadiusLarger),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: bgColorBlueLightSecondary,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+                boxShadow: [boxShadowDefault],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -82,7 +82,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        type == 0 ? user!.nome : teacher!.nome,
+                        nome,
                         style: const TextStyle(
                           color: fontColorWhite,
                           fontSize: 24,
@@ -110,7 +110,8 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                   ),
                 ],
               ),
-            )
+            ),
+            const SizedBox(height: defaultPadding),
           ],
         ),
       ),

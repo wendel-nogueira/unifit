@@ -22,7 +22,7 @@ class _RadioCustomState extends State<RadioCustom> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 68,
+      width: 70,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -31,7 +31,7 @@ class _RadioCustomState extends State<RadioCustom> {
             style: GoogleFonts.roboto(
               color: fontColorWhite,
               fontSize: 16,
-              fontWeight: FontWeight.w300,
+              fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.left,
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unifit/constants.dart';
+import 'package:unifit/controllers/account_controller.dart';
 
 class Menu extends StatefulWidget {
   const Menu({super.key, required this.accountType});
@@ -14,46 +15,54 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   @override
   Widget build(BuildContext context) {
-    final Map<String, IconData> iconList = {
-      '/my_plans': Icons.description,
-      '/my_assessments': Icons.assessment,
-      '/profile': Icons.person_outline,
-      '/students-list': Icons.people_outline,
-      '/frequency': Icons.calendar_month,
-    };
+    AccountController accountController = Get.find<AccountController>();
 
     final Map<int, List<dynamic>> routesList = {
       0: [
         {
-          'route': '/my_plans',
+          'route': '/my-sheets',
           'text': 'meus planos',
+          'icon': Icons.description_outlined,
         },
         {
-          'route': '/my_assessments',
+          'route': accountController.type == 0 && accountController.user != null
+              ? '/user-physical-assessments/${accountController.user!.idAluno}'
+              : '/physical-assessments',
           'text': 'minhas avaliações',
+          'icon': Icons.assessment_outlined,
         },
         {
           'route': '/profile',
           'text': 'meu perfil',
+          'icon': Icons.person_outline,
         },
       ],
       1: [
         {
           'route': '/students-list',
           'text': 'alunos cadastrados',
+          'icon': Icons.people_outline,
         },
         {
           'route': '/frequency',
           'text': 'frequência',
+          'icon': Icons.calendar_month_outlined,
+        },
+        {
+          'route': '/sheets-list',
+          'text': 'fichas de treino',
+          'icon': Icons.description_outlined,
         },
         {
           'route': '/profile',
           'text': 'meu perfil',
+          'icon': Icons.person_outline,
         },
       ],
     };
 
-    final List<dynamic> userRoutes = routesList[widget.accountType]!;
+    final List<dynamic> userRoutes =
+        widget.accountType != -1 ? routesList[widget.accountType]! : [];
     String activeRoute = ModalRoute.of(context)!.settings.name!;
 
     return Container(
@@ -64,13 +73,7 @@ class _MenuState extends State<Menu> {
       decoration: const BoxDecoration(
         color: bgColorWhiteNormal,
         borderRadius: BorderRadius.all(Radius.circular(defaultRadiusLarger)),
-        boxShadow: [
-          BoxShadow(
-            color: bgColorWhiteDark,
-            blurRadius: 4,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: [boxShadowDefault],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,7 +97,7 @@ class _MenuState extends State<Menu> {
                     },
                     hoverColor: fontColorBlue,
                     child: Icon(
-                      iconList[userRoutes[index]['route']]!,
+                      userRoutes[index]['icon'],
                       color: activeRoute == userRoutes[index]['route']
                           ? fontColorBlue
                           : fontColorGray,
