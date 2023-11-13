@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:unifit/controllers/account_controller.dart';
 import 'package:unifit/utils/alert.dart';
+import 'package:unifit/views/edit_user/edit_user.dart';
 import 'package:unifit/views/frequency_list/frequency_list_screen.dart';
 import 'package:unifit/views/home_screen.dart';
 import 'package:unifit/views/login_screen.dart';
@@ -113,6 +114,13 @@ List<GetPage> appRoutes() => [
       GetPage(
         name: '/new-user/:type',
         page: () => const NewUserScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/edit-user/:type/:id',
+        page: () => const EditUserScreen(),
         middlewares: [AuthMiddleware(), RouteName()],
         //transition: Transition.leftToRightWithFade,
         //transitionDuration: transitionDuration,

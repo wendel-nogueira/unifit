@@ -51,3 +51,67 @@ class _ButtonPrimaryState extends State<ButtonPrimary> {
     );
   }
 }
+
+class ButtonSecondary extends StatefulWidget {
+  const ButtonSecondary(
+      {super.key,
+      required this.hintText,
+      required this.onPressed,
+      this.type = ButtonType.info});
+
+  final String hintText;
+  final Function onPressed;
+  final ButtonType type;
+
+  @override
+  State<ButtonSecondary> createState() => _ButtonSecondary();
+}
+
+enum ButtonType {
+  success,
+  warning,
+  danger,
+  info,
+}
+
+class _ButtonSecondary extends State<ButtonSecondary> {
+  Color typeToColor(ButtonType type) {
+    switch (type) {
+      case ButtonType.success:
+        return statusColorSuccess;
+      case ButtonType.warning:
+        return statusColorWarning;
+      case ButtonType.danger:
+        return statusColorError;
+      case ButtonType.info:
+        return statusColorInfo;
+      default:
+        return statusColorInfo;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => {
+        widget.onPressed(),
+      },
+      style: ButtonStyle(
+        backgroundColor:
+            MaterialStateProperty.all<Color>(typeToColor(widget.type)),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Text(
+          widget.hintText,
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: fontColorWhite,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}

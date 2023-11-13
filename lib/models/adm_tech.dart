@@ -17,9 +17,7 @@ class AdmTech {
 
   factory AdmTech.fromJson(Map<String, dynamic> json) {
     return AdmTech(
-      idTecnicoAdministrativo: json['idtecnicoadministrativo'] ??
-          json['idTecnicoAdministrativo'] ??
-          -1,
+      idTecnicoAdministrativo: json['idtecnico_administrativo'] ?? -1,
       nome: json['nome'],
       email: json['email'],
       sexo: json['sexo'] ?? '',
@@ -46,6 +44,7 @@ class AdmTech {
         'length': 45,
         'required': true,
         'value': nome,
+        'edit': true,
       },
       {
         'atribute': 'email',
@@ -54,6 +53,7 @@ class AdmTech {
         'length': 45,
         'required': true,
         'value': email,
+        'edit': true,
       },
       {
         'atribute': 'senha',
@@ -62,6 +62,7 @@ class AdmTech {
         'length': 45,
         'required': true,
         'value': senha,
+        'edit': false,
       },
       {
         'atribute': 'nascimento',
@@ -69,6 +70,7 @@ class AdmTech {
         'type': 'date',
         'required': true,
         'value': nascimento,
+        'edit': false,
       },
       {
         'atribute': 'sexo',
@@ -79,6 +81,7 @@ class AdmTech {
           'Masculino',
           'Feminino',
         ],
+        'edit': false,
       },
     ];
 

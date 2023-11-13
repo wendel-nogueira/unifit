@@ -435,7 +435,7 @@ class _NewSheetScreen extends State<NewSheetScreen> {
                     Column(
                       children: <Widget>[
                         SizedBox(
-                          height: height - 400, // fixed height
+                          height: height - (height * 0.59),
                           child: ListView.builder(
                             itemCount: fields.length,
                             itemBuilder: (context, index) {
@@ -621,7 +621,8 @@ class _NewSheetScreen extends State<NewSheetScreen> {
                 ),
               ),
               SizedBox(
-                height: height - 412 - defaultPadding, // fixed height
+                height:
+                    height - (height * 0.6) - defaultPadding, // fixed height
                 child: ListView.builder(
                   itemCount: trainings.length,
                   itemBuilder: (context, index) {

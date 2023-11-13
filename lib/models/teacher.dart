@@ -24,7 +24,7 @@ class Teacher {
       email: json['email'],
       nascimento: DateTime.parse(json['nascimento']),
       sexo: json['sexo'] ?? '',
-      isEstagiario: json['isestagiario'] == 'true' ? true : false,
+      isEstagiario: json['isestagiario'],
       senha: json['senha'] ?? '',
     );
   }
@@ -35,7 +35,7 @@ class Teacher {
         'email': email,
         'nascimento': nascimento!.toIso8601String(),
         'sexo': sexo,
-        'isestagiario': isEstagiario.toString(),
+        'isestagiario': isEstagiario ? 'true' : 'false',
         'senha': senha ?? '',
       };
 
@@ -48,6 +48,7 @@ class Teacher {
         'length': 45,
         'required': true,
         'value': nome,
+        'edit': true,
       },
       {
         'atribute': 'email',
@@ -56,6 +57,7 @@ class Teacher {
         'length': 45,
         'required': true,
         'value': email,
+        'edit': true,
       },
       {
         'atribute': 'senha',
@@ -64,6 +66,7 @@ class Teacher {
         'length': 45,
         'required': true,
         'value': senha,
+        'edit': false,
       },
       {
         'atribute': 'nascimento',
@@ -71,6 +74,7 @@ class Teacher {
         'type': 'date',
         'required': true,
         'value': nascimento,
+        'edit': false,
       },
       {
         'atribute': 'sexo',
@@ -81,12 +85,14 @@ class Teacher {
           'Masculino',
           'Feminino',
         ],
+        'edit': false,
       },
       {
         'atribute': 'isEstagiario',
         'label': 'É estagiário?',
         'value': isEstagiario,
         'type': 'checkbox',
+        'edit': false,
       },
     ];
 
