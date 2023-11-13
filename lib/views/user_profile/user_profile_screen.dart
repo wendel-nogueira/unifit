@@ -29,11 +29,16 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     final type = account.type!;
     final user = account.user;
     final teacher = account.teacher;
+    final admin = account.admtech;
 
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
 
-    var nome = type == 0 ? user!.nome.toString() : teacher!.nome.toString();
+    var nome = type == 0
+        ? user!.nome.toString()
+        : type == 1
+            ? teacher!.nome.toString()
+            : admin!.nome.toString();
 
     if (nome.length > 10) {
       nome = '${nome.substring(0, 10)}...';
@@ -90,7 +95,15 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                         ),
                       ),
                       Text(
-                        type == 0 ? 'aluno' : 'professor',
+                        type == 0
+                            ? 'aluno'
+                            : type == 1 &&
+                                    teacher != null &&
+                                    teacher.isEstagiario
+                                ? 'estagiário'
+                                : type == 1
+                                    ? 'professor'
+                                    : 'tec. adm.',
                         style: const TextStyle(
                           color: fontColorWhite,
                           fontSize: 16,

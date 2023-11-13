@@ -37,12 +37,6 @@ class _MasterPage extends State<MasterPage> {
       body: SingleChildScrollView(
         child: Container(
           color: bgColorWhiteLight,
-          // padding: widget.usePadding
-          //     ? const EdgeInsets.only(
-          //         left: defaultPadding,
-          //         right: defaultPadding,
-          //       )
-          //     : null,
           alignment: Alignment.topCenter,
           child: widget.child,
         ),

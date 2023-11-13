@@ -129,12 +129,7 @@ class _NewUserScreen extends State<NewUserScreen> {
                   loading = false;
                 },
               ),
-              if (value == 201)
-                {
-                  showAlert('usuário criado', 'usuário criado com sucesso!',
-                      'success'),
-                  Get.back(),
-                },
+              if (value == 201) Get.toNamed('/students-list'),
             },
           )
           .catchError(
@@ -143,11 +138,6 @@ class _NewUserScreen extends State<NewUserScreen> {
                 () {
                   loading = false;
                 },
-              ),
-              showAlert(
-                'erro',
-                'não foi possível cadastrar o aluno!',
-                'error',
               ),
             },
           );
@@ -182,8 +172,9 @@ class _NewUserScreen extends State<NewUserScreen> {
       showMenu: false,
       child: Column(
         children: <Widget>[
-          SizedBox(
-            height: height - 80, // fixed height
+          Container(
+            height: height - 80,
+            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
             child: ListView.builder(
               itemCount: fields.length,
               itemBuilder: (context, index) {

@@ -72,6 +72,7 @@ class User {
         'value': matricula,
         'type': 'text',
         'length': 45,
+        'edit': false,
       },
       {
         'atribute': 'nome',
@@ -79,6 +80,7 @@ class User {
         'value': nome,
         'type': 'text',
         'length': 45,
+        'edit': false,
       },
       {
         'atribute': 'email',
@@ -86,6 +88,7 @@ class User {
         'value': email,
         'type': 'email',
         'length': 45,
+        'edit': false,
       },
       {
         'atribute': 'senha',
@@ -93,6 +96,7 @@ class User {
         'value': senha,
         'type': 'password',
         'length': 45,
+        'edit': false,
       },
       {
         'atribute': 'curso',
@@ -101,6 +105,7 @@ class User {
         'type': 'select',
         'options': ['SIN', 'CCO'],
         'required': true,
+        'edit': true,
       },
       {
         'atribute': 'nascimento',
@@ -108,6 +113,7 @@ class User {
         'value': nascimento,
         'type': 'date',
         'required': true,
+        'edit': false,
       },
       {
         'atribute': 'objetivo',
@@ -116,6 +122,7 @@ class User {
         'type': 'select',
         'options': ['Hipertrofia', 'Emagrecimento', 'Definição'],
         'required': true,
+        'edit': true,
       },
       {
         'atribute': 'anoIngresso',
@@ -126,6 +133,7 @@ class User {
           for (int i = 2000; i <= DateTime.now().year; i++) i.toString()
         ],
         'required': true,
+        'edit': false,
       },
       {
         'atribute': 'etnia',
@@ -134,6 +142,7 @@ class User {
         'type': 'select',
         'options': ['Branco', 'Negro', 'Oriental', 'Hispania', 'Pardo'],
         'required': true,
+        'edit': false,
       },
       {
         'atribute': 'sexo',
@@ -144,6 +153,7 @@ class User {
           'Masculino',
           'Feminino',
         ],
+        'edit': false,
       },
       {
         'atribute': 'observacao',
@@ -151,6 +161,7 @@ class User {
         'value': observacao,
         'type': 'text',
         'length': 45,
+        'edit': true,
       }
     ];
 

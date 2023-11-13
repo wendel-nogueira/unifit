@@ -4,21 +4,21 @@ import 'package:http/http.dart' as http;
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> createUser(String token, String type, dynamic user) async {
+Future<int> updateUser(String token, String type, dynamic user, int id) async {
   String api = endpoint;
 
   if (type == 'student') {
-    api += '/alunos';
+    api += '/alunos/$id';
   } else if (type == 'teacher') {
-    api += '/professor';
+    api += '/professor/$id';
   } else if (type == 'tecadm') {
-    api += '/tecadm';
+    api += '/tecadm/$id';
   }
 
   Map<String, dynamic> body = user.toJson();
 
   var response = await http
-      .post(
+      .patch(
     Uri.parse(api),
     headers: {
       'Content-Type': 'application/json',
@@ -41,8 +41,9 @@ Future<int> createUser(String token, String type, dynamic user) async {
     },
   );
 
-  if (response.statusCode == 201) {
-    showAlert('usuário criado', 'usuário criado com sucesso!', 'success');
+  if (response.statusCode == 200) {
+    showAlert(
+        'usuário atualizado', 'usuário atualizado com sucesso!', 'success');
 
     return 201;
   } else if (json.decode(response.body)['message'] ==
@@ -53,8 +54,8 @@ Future<int> createUser(String token, String type, dynamic user) async {
     return 401;
   } else {
     showAlert(
-        'erro ao criar usuário',
-        'não foi possível criar o usuário, verifique os dados e tente novamente!',
+        'erro ao atualizar usuário',
+        'não foi possível atualizar o usuário, verifique os dados e tente novamente!',
         'error');
 
     return 500;

@@ -5,9 +5,18 @@ import 'package:unifit/components/page.dart';
 import 'package:unifit/components/student_card.dart';
 import 'package:unifit/constants.dart';
 import 'package:unifit/controllers/account_controller.dart';
+import 'package:unifit/models/adm_tech.dart';
+import 'package:unifit/models/teacher.dart';
 import 'package:unifit/models/user.dart';
 import 'package:unifit/services/create_frequency.dart';
+import 'package:unifit/services/delete_student.dart';
+import 'package:unifit/services/delete_teacher.dart';
+import 'package:unifit/services/delete_tecadm.dart';
 import 'package:unifit/services/get_students.dart';
+import 'package:unifit/services/get_teachers.dart';
+import 'package:unifit/services/get_tecadm.dart';
+
+import '../../components/button.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -17,36 +26,282 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreen extends State<UserListScreen> {
-  List<User> students = [];
-  List<User> studentsFiltered = [];
+  List<dynamic> users = [];
+  List<dynamic> usersFiltered = [];
   String search = '';
-  bool loading = true;
+
+  bool loadingStudents = false;
+  bool loadingTeachers = false;
+  bool loadingAdmins = false;
 
   @override
   void initState() {
     super.initState();
 
     if (mounted) {
-      String token = Get.find<AccountController>().token!;
+      var accountController = Get.find<AccountController>();
+
+      var type = accountController.type!;
+      String token = accountController.token!;
+
+      loadingStudents = true;
 
       getStudents(token).then(
         (value) => {
           if (mounted)
             setState(
               () {
-                students = value;
-                studentsFiltered = value;
-                loading = false;
+                var allUsers = [];
+
+                for (var element in value) {
+                  var user = {
+                    'id': element.idAluno,
+                    'matricula': element.matricula,
+                    'nome': element.nome,
+                    'curso': element.curso,
+                    'nascimento': element.nascimento,
+                    'tipo': 'aluno',
+                  };
+
+                  allUsers.add(
+                    user,
+                  );
+                }
+
+                allUsers.sort(
+                  (a, b) {
+                    return a['matricula'].compareTo(b['matricula']);
+                  },
+                );
+
+                for (var element in allUsers) {
+                  users.add(
+                    element,
+                  );
+                }
+
+                users.sort(
+                  (a, b) {
+                    return a['tipo'].compareTo(b['tipo']);
+                  },
+                );
+
+                usersFiltered = users;
+
+                loadingStudents = false;
               },
             )
         },
       );
+
+      if (type == 1) {
+        loadingTeachers = true;
+
+        getTeachers(token).then(
+          (value) => {
+            if (mounted)
+              setState(
+                () {
+                  var allUsers = [];
+
+                  for (var element in value) {
+                    var user = {
+                      'id': element.idProfessor,
+                      'matricula': element.idProfessor.toString(),
+                      'nome': element.nome,
+                      'nascimento': element.nascimento,
+                      'curso': 'N/A',
+                      'tipo': 'professor',
+                    };
+
+                    allUsers.add(
+                      user,
+                    );
+                  }
+
+                  allUsers.sort(
+                    (a, b) {
+                      return a['matricula'].compareTo(b['matricula']);
+                    },
+                  );
+
+                  for (var element in allUsers) {
+                    users.add(
+                      element,
+                    );
+                  }
+
+                  users.sort(
+                    (a, b) {
+                      return a['tipo'].compareTo(b['tipo']);
+                    },
+                  );
+
+                  usersFiltered = users;
+
+                  loadingTeachers = false;
+                },
+              )
+          },
+        );
+
+        loadingAdmins = true;
+        getTecAdm(token).then(
+          (value) => {
+            if (mounted)
+              setState(
+                () {
+                  var allUsers = [];
+
+                  for (var element in value) {
+                    var user = {
+                      'id': element.idTecnicoAdministrativo,
+                      'matricula': element.idTecnicoAdministrativo.toString(),
+                      'nome': element.nome,
+                      'nascimento': element.nascimento,
+                      'curso': 'N/A',
+                      'tipo': 'tec',
+                    };
+
+                    allUsers.add(
+                      user,
+                    );
+                  }
+
+                  allUsers.sort(
+                    (a, b) {
+                      return a['matricula'].compareTo(b['matricula']);
+                    },
+                  );
+
+                  for (var element in allUsers) {
+                    users.add(
+                      element,
+                    );
+                  }
+
+                  users.sort(
+                    (a, b) {
+                      return a['tipo'].compareTo(b['tipo']);
+                    },
+                  );
+
+                  usersFiltered = users;
+
+                  loadingAdmins = false;
+                },
+              )
+          },
+        );
+      } else {
+        loadingTeachers = false;
+        loadingAdmins = false;
+      }
     }
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void delete(int id, String tipo) {
+    var accountController = Get.find<AccountController>();
+    var token = accountController.token!;
+
+    if (tipo == 'aluno') {
+      deleteStudent(token, id);
+    } else if (tipo == 'professor') {
+      deleteTeacher(token, id);
+    } else if (tipo == 'tec') {
+      deleteTecadm(token, id);
+    }
+  }
+
+  void deleteUser(int id, String tipo) {
+    var width = MediaQuery.of(context).size.width;
+
+    var dialogSize = width - 2 * defaultPadding;
+
+    if (dialogSize > 380) {
+      dialogSize = 380;
+    }
+
+    Get.dialog(
+      Center(
+        child: Container(
+          width: dialogSize,
+          height: 190,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(defaultPadding),
+          decoration: const BoxDecoration(
+            color: bgColorWhiteNormal,
+            borderRadius: borderRadiusSmall,
+            boxShadow: [boxShadowDefault],
+          ),
+          child: Column(
+            children: [
+              Text(
+                'deseja realmente desativar o usuário?',
+                style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: fontColorGray,
+                  textStyle: const TextStyle(
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () => {
+                  Get.back(),
+                  delete(id, tipo),
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(statusColorWarning),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'desativar',
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: fontColorWhite,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => {
+                  Get.back(),
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(statusColorError),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'cancelar',
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: fontColorWhite,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void registerFrequency(int studentId) {
@@ -63,7 +318,9 @@ class _UserListScreen extends State<UserListScreen> {
           {
             setState(
               () {
-                loading = false;
+                loadingStudents = false;
+                loadingTeachers = false;
+                loadingAdmins = false;
               },
             )
           }
@@ -86,7 +343,7 @@ class _UserListScreen extends State<UserListScreen> {
     var type = accountController.type!;
 
     return MasterPage(
-      title: 'alunos cadastrados',
+      title: 'usuários cadastrados',
       showBackButton: false,
       showMenu: type == 1 ? true : false,
       child: Column(
@@ -257,17 +514,17 @@ class _UserListScreen extends State<UserListScreen> {
                             search = value;
 
                             if (search.isEmpty) {
-                              studentsFiltered = students;
+                              usersFiltered = users;
                             } else {
-                              studentsFiltered = students
+                              usersFiltered = users
                                   .where((element) =>
-                                      element.nome
+                                      element['nome']
                                           .toLowerCase()
                                           .contains(search.toLowerCase()) ||
-                                      element.matricula
+                                      element['matricula']
                                           .toLowerCase()
                                           .contains(search.toLowerCase()) ||
-                                      element.curso
+                                      element['curso']
                                           .toLowerCase()
                                           .contains(search.toLowerCase()))
                                   .toList();
@@ -304,29 +561,7 @@ class _UserListScreen extends State<UserListScreen> {
                             padding: const EdgeInsets.fromLTRB(
                                 defaultPaddingFieldsHorizontal, 0, 0, 0),
                             child: GestureDetector(
-                                onTap: () => {
-                                      setState(() {
-                                        if (search.isEmpty) {
-                                          studentsFiltered = students;
-                                        } else {
-                                          studentsFiltered = students
-                                              .where((element) =>
-                                                  element.nome
-                                                      .toLowerCase()
-                                                      .contains(search
-                                                          .toLowerCase()) ||
-                                                  element.matricula
-                                                      .toLowerCase()
-                                                      .contains(search
-                                                          .toLowerCase()) ||
-                                                  element.curso
-                                                      .toLowerCase()
-                                                      .contains(
-                                                          search.toLowerCase()))
-                                              .toList();
-                                        }
-                                      })
-                                    },
+                                onTap: () => {},
                                 child: InkWell(
                                   child: Container(
                                     width: 34,
@@ -352,29 +587,58 @@ class _UserListScreen extends State<UserListScreen> {
                 ]),
           ),
           const SizedBox(height: 16),
-          !loading
+          !loadingStudents && !loadingTeachers && !loadingAdmins
               ? Column(
                   children: <Widget>[
                     SizedBox(
                       height: height - 206, // fixed height
                       child: ListView.builder(
-                        itemCount: studentsFiltered.length,
+                        itemCount: usersFiltered.length,
                         itemBuilder: (context, index) {
                           return Column(
                             children: [
+                              if (index > 0 &&
+                                  usersFiltered[index - 1]['tipo'] !=
+                                      usersFiltered[index]['tipo'])
+                                Container(
+                                  width: width - 2 * defaultPadding - 24,
+                                  height: 1,
+                                  color: fontColorBlue,
+                                  margin: const EdgeInsets.only(
+                                    bottom: defaultPadding - 12,
+                                  ),
+                                ),
                               StudentCard(
-                                registration: studentsFiltered[index].matricula,
-                                name: studentsFiltered[index].nome,
-                                course: studentsFiltered[index].curso,
-                                birthDate: studentsFiltered[index]
-                                    .nascimento
+                                registration: usersFiltered[index]['tipo'] ==
+                                        'aluno'
+                                    ? "aluno ${usersFiltered[index]['matricula']}"
+                                    : usersFiltered[index]['tipo'] ==
+                                            'professor'
+                                        ? "professor ${usersFiltered[index]['matricula']}"
+                                        : "téc. adm. ${usersFiltered[index]['matricula']}",
+                                name: usersFiltered[index]['nome'],
+                                course: usersFiltered[index]['curso'],
+                                birthDate: usersFiltered[index]['nascimento']
                                     .toString(),
                                 onTap: () => {
                                   Get.dialog(
                                     Center(
                                       child: Container(
                                         width: dialogSize,
-                                        height: type == 1 ? 360 : 210,
+                                        height: type == 1 &&
+                                                usersFiltered[index]['tipo'] ==
+                                                    'aluno' &&
+                                                accountController
+                                                    .teacher!.isEstagiario
+                                            ? 360
+                                            : type == 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? 450
+                                                : type == 1
+                                                    ? 260
+                                                    : 210,
                                         alignment: Alignment.center,
                                         padding: const EdgeInsets.all(
                                             defaultPadding),
@@ -386,7 +650,14 @@ class _UserListScreen extends State<UserListScreen> {
                                         child: Column(
                                           children: [
                                             Text(
-                                              studentsFiltered[index].matricula,
+                                              usersFiltered[index]['tipo'] ==
+                                                      'aluno'
+                                                  ? "aluno ${usersFiltered[index]['matricula']}"
+                                                  : usersFiltered[index]
+                                                              ['tipo'] ==
+                                                          'professor'
+                                                      ? "professor ${usersFiltered[index]['matricula']}"
+                                                      : "téc. adm. ${usersFiltered[index]['matricula']}",
                                               style: GoogleFonts.roboto(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 18,
@@ -419,181 +690,120 @@ class _UserListScreen extends State<UserListScreen> {
                                               textAlign: TextAlign.center,
                                             ),
                                             const SizedBox(height: 24),
-                                            type == 1
-                                                ? TextButton(
-                                                    onPressed: () => {
-                                                      Get.back(),
-                                                      Get.toNamed(
-                                                          '/student-frequency/${studentsFiltered[index].idAluno}'),
-                                                    },
-                                                    style: ButtonStyle(
-                                                      backgroundColor:
-                                                          MaterialStateProperty.all<
-                                                                  Color>(
-                                                              bgColorBlueLightSecondary),
-                                                    ),
-                                                    child: SizedBox(
-                                                      width: double.infinity,
-                                                      child: Text(
+                                            type == 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? ButtonSecondary(
+                                                    hintText:
                                                         'frequência do aluno',
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16,
-                                                          color: fontColorWhite,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
-                                                  )
-                                                : Container(),
-                                            type == 1
-                                                ? TextButton(
+                                                    type: ButtonType.info,
                                                     onPressed: () => {
                                                       Get.back(),
                                                       Get.toNamed(
-                                                          '/student-sheets/${studentsFiltered[index].idAluno}'),
+                                                          "/student-frequency/${usersFiltered[index]['id']}"),
                                                     },
-                                                    style: ButtonStyle(
-                                                      backgroundColor:
-                                                          MaterialStateProperty.all<
-                                                                  Color>(
-                                                              bgColorBlueLightSecondary),
-                                                    ),
-                                                    child: SizedBox(
-                                                      width: double.infinity,
-                                                      child: Text(
-                                                        'fichas do aluno',
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16,
-                                                          color: fontColorWhite,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
                                                   )
                                                 : Container(),
-                                            type == 1
-                                                ? TextButton(
+                                            type == 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? ButtonSecondary(
+                                                    hintText: 'fichas do aluno',
+                                                    type: ButtonType.info,
                                                     onPressed: () => {
                                                       Get.back(),
                                                       Get.toNamed(
-                                                          '/user-physical-assessments/${studentsFiltered[index].idAluno}'),
+                                                          "/student-sheets/${usersFiltered[index]['id']}"),
                                                     },
-                                                    style: ButtonStyle(
-                                                      backgroundColor:
-                                                          MaterialStateProperty.all<
-                                                                  Color>(
-                                                              bgColorBlueLightSecondary),
-                                                    ),
-                                                    child: SizedBox(
-                                                      width: double.infinity,
-                                                      child: Text(
+                                                  )
+                                                : Container(),
+                                            type == 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? ButtonSecondary(
+                                                    hintText:
                                                         'avaliações do aluno',
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16,
-                                                          color: fontColorWhite,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
-                                                  )
-                                                : Container(),
-                                            type == 1
-                                                ? TextButton(
+                                                    type: ButtonType.info,
                                                     onPressed: () => {
                                                       Get.back(),
                                                       Get.toNamed(
-                                                          '/new-user-anamnesis/${studentsFiltered[index].idAluno}'),
+                                                          "/user-physical-assessments/${usersFiltered[index]['id']}"),
                                                     },
-                                                    style: ButtonStyle(
-                                                      backgroundColor:
-                                                          MaterialStateProperty.all<
-                                                                  Color>(
-                                                              bgColorBlueLightSecondary),
-                                                    ),
-                                                    child: SizedBox(
-                                                      width: double.infinity,
-                                                      child: Text(
-                                                        'anamnese do aluno',
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16,
-                                                          color: fontColorWhite,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
                                                   )
                                                 : Container(),
-                                            type != 1
-                                                ? TextButton(
+                                            type == 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? ButtonSecondary(
+                                                    hintText:
+                                                        'anamnese do aluno',
+                                                    type: ButtonType.info,
+                                                    onPressed: () => {
+                                                      Get.back(),
+                                                      Get.toNamed(
+                                                          "/new-user-anamnesis/${usersFiltered[index]['id']}"),
+                                                    },
+                                                  )
+                                                : Container(),
+                                            type == 1 &&
+                                                    accountController.teacher !=
+                                                        null &&
+                                                    !accountController
+                                                        .teacher!.isEstagiario
+                                                ? ButtonSecondary(
+                                                    hintText: 'atualizar',
+                                                    type: ButtonType.success,
+                                                    onPressed: () => {
+                                                      Get.back(),
+                                                      Get.toNamed(
+                                                          "/edit-user/${usersFiltered[index]['tipo']}/${usersFiltered[index]['id']}"),
+                                                    },
+                                                  )
+                                                : Container(),
+                                            type == 1 &&
+                                                    accountController.teacher !=
+                                                        null &&
+                                                    !accountController
+                                                        .teacher!.isEstagiario
+                                                ? ButtonSecondary(
+                                                    hintText: 'desativar',
+                                                    type: ButtonType.warning,
+                                                    onPressed: () => {
+                                                      Get.back(),
+                                                      deleteUser(
+                                                          usersFiltered[index]
+                                                              ['id'],
+                                                          usersFiltered[index]
+                                                              ['tipo']),
+                                                    },
+                                                  )
+                                                : Container(),
+                                            type != 1 &&
+                                                    usersFiltered[index]
+                                                            ['tipo'] ==
+                                                        'aluno'
+                                                ? ButtonSecondary(
+                                                    hintText: 'marcar presença',
+                                                    type: ButtonType.success,
                                                     onPressed: () => {
                                                       registerFrequency(
-                                                          studentsFiltered[
-                                                                  index]
-                                                              .idAluno),
+                                                          usersFiltered[index]
+                                                              ['id']),
                                                       Get.back(),
                                                     },
-                                                    style: ButtonStyle(
-                                                      backgroundColor:
-                                                          MaterialStateProperty.all<
-                                                                  Color>(
-                                                              statusColorSuccess),
-                                                    ),
-                                                    child: SizedBox(
-                                                      width: double.infinity,
-                                                      child: Text(
-                                                        'marcar presença',
-                                                        style:
-                                                            GoogleFonts.roboto(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16,
-                                                          color: fontColorWhite,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
                                                   )
                                                 : Container(),
-                                            TextButton(
+                                            ButtonSecondary(
+                                              hintText: 'fechar',
+                                              type: ButtonType.danger,
                                               onPressed: () => {
                                                 Get.back(),
                                               },
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    MaterialStateProperty.all<
-                                                            Color>(
-                                                        statusColorError),
-                                              ),
-                                              child: SizedBox(
-                                                width: double.infinity,
-                                                child: Text(
-                                                  'fechar',
-                                                  style: GoogleFonts.roboto(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 16,
-                                                    color: fontColorWhite,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            ),
+                                            )
                                           ],
                                         ),
                                       ),
