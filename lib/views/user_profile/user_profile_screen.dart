@@ -10,6 +10,7 @@ import 'package:unifit/services/update_assessment.dart';
 
 import '../../components/page.dart';
 import '../../services/create_assessment.dart';
+import '../../services/send_feedback_email.service.dart';
 import '../../services/update_user.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -311,7 +312,17 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     );
   }
 
-  void sendFeedback(String feedback) {}
+  void sendFeedback(String feedback) {
+    if (feedback.isNotEmpty) {
+      var token = Get.find<AccountController>().token!;
+
+      sendFeedbackEmail(token, feedback).then((value) {
+        if (value == 200) {
+          Get.back();
+        }
+      });
+    }
+  }
 
   void showFeedback() {
     var width = MediaQuery.of(context).size.width;
