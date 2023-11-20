@@ -21,6 +21,7 @@ import 'package:unifit/views/student_frequency/student_frequency_screen.dart';
 import 'package:unifit/views/student_sheets/student_sheets.dart';
 import 'package:unifit/views/user_list/user_list_screen.dart';
 import 'package:unifit/views/user_profile/user_profile_screen.dart';
+import 'package:unifit/views/view_anamnesis/view_anamnesis_screen.dart';
 import 'package:unifit/views/view_physical_assessment/view_physical_assessment.dart';
 import 'package:unifit/views/view_sheet_screen/view_sheet_screen.dart';
 
@@ -93,6 +94,13 @@ List<GetPage> appRoutes() => [
       GetPage(
         name: '/new-physical-assessments/:id',
         page: () => const NewPhysicalAssessmentScreen(),
+        middlewares: [AuthMiddleware(), RouteName()],
+        //transition: Transition.leftToRightWithFade,
+        //transitionDuration: transitionDuration,
+      ),
+      GetPage(
+        name: '/view-user-anamnesis/:id',
+        page: () => const ViewAnamnesisScreen(),
         middlewares: [AuthMiddleware(), RouteName()],
         //transition: Transition.leftToRightWithFade,
         //transitionDuration: transitionDuration,

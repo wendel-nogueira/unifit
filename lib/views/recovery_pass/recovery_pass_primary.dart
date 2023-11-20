@@ -4,8 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:unifit/components/button.dart';
 import 'package:unifit/components/input.dart';
 import 'package:unifit/constants.dart';
+import 'package:unifit/controllers/recovery_pass_controller.dart';
 import 'package:unifit/services/send_code.service.dart';
 import 'package:unifit/utils/alert.dart';
+
+import '../../components/radio.dart';
 
 class RecoveryPassPrimaryPage extends StatefulWidget {
   const RecoveryPassPrimaryPage({super.key});
@@ -15,13 +18,32 @@ class RecoveryPassPrimaryPage extends StatefulWidget {
 }
 
 class _RecoveryPassPrimaryPage extends State<RecoveryPassPrimaryPage> {
+  int type = 0;
   String email = '';
   bool disabled = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    Get.lazyPut<RecoveryPassController>(() => RecoveryPassController());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var recoveryPassController = Get.find<RecoveryPassController>();
+
+    final List<String> types = <String>[
+      'aluno',
+      'professor',
+      'tec. adm.',
+    ];
+
     return Scaffold(
-      body: Container(
+        body: SingleChildScrollView(
+      child: Container(
+        height: height,
         decoration: const BoxDecoration(
             gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -71,6 +93,45 @@ class _RecoveryPassPrimaryPage extends State<RecoveryPassPrimaryPage> {
                 },
               ),
               const SizedBox(height: defaultMarginLarge),
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  verticalDirection: VerticalDirection.down,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RadioCustom(
+                      hintText: types[0],
+                      checked: type == 0,
+                      onChanged: () {
+                        setState(() {
+                          type = 0;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: defaultMarginSmall),
+                    RadioCustom(
+                      hintText: types[1],
+                      checked: type == 1,
+                      onChanged: () {
+                        setState(() {
+                          type = 1;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: defaultMarginSmall),
+                    RadioCustom(
+                      hintText: types[2],
+                      checked: type == 2,
+                      onChanged: () {
+                        setState(() {
+                          type = 2;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: defaultMarginLarge),
               ButtonPrimary(
                   hintText: disabled
                       ? 'enviar novamente em 60 segundos'
@@ -91,7 +152,7 @@ class _RecoveryPassPrimaryPage extends State<RecoveryPassPrimaryPage> {
                       return;
                     }
 
-                    sendCode(email);
+                    recoveryPassController.sendEmail(email, type);
                     setState(() {
                       disabled = true;
                     });
@@ -103,14 +164,15 @@ class _RecoveryPassPrimaryPage extends State<RecoveryPassPrimaryPage> {
                     });
                   }),
               ButtonPrimary(
-                  hintText: 'já recebi meu código',
-                  onPressed: () {
-                    Get.toNamed('/recovery-pass-secondary');
-                  }),
+                hintText: 'já recebi meu código',
+                onPressed: () {
+                  Get.toNamed('/recovery-pass-secondary');
+                },
+              ),
             ],
           ),
         ),
       ),
-    );
+    ));
   }
 }

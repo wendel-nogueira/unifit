@@ -24,7 +24,7 @@ class Teacher {
       email: json['email'],
       nascimento: DateTime.parse(json['nascimento']),
       sexo: json['sexo'] ?? '',
-      isEstagiario: json['isestagiario'],
+      isEstagiario: json['isestagiario'] == 'true' ? true : false,
       senha: json['senha'] ?? '',
     );
   }

@@ -1,24 +1,32 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> sendCode(String email, String code) async {
-  String api = '$endpoint/send-reset-password-email';
+Future<int> updatePassword(String type, String newPassword, int id) async {
+  String api = endpoint;
+
+  if (type == 'aluno') {
+    api += '/change-password-aluno/$id';
+  } else if (type == 'professor') {
+    api += '/change-password-professor/$id';
+  } else if (type == 'admin') {
+    api += '/change-password-tecnico/$id';
+  }
 
   Map<String, dynamic> body = {
-    'email': email,
-    'code': code,
+    'newPassword': newPassword,
   };
 
   var response = await http
       .post(
     Uri.parse(api),
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: body,
+    body: json.encode(body),
   )
       .timeout(
     const Duration(seconds: 20),
@@ -35,13 +43,13 @@ Future<int> sendCode(String email, String code) async {
   );
 
   if (response.statusCode == 200) {
-    showAlert('email enviado', 'verifique seu email!', 'success');
+    showAlert('senha atualizada', 'senha atualizada com sucesso!', 'success');
 
     return 200;
   } else {
     showAlert(
-        'erro ao enviar email',
-        'não foi possível enviar o email, verifique os dados e tente novamente!',
+        'erro ao atualizar senha',
+        'não foi possível atualizar a senha, verifique os dados e tente novamente!',
         'error');
 
     return 500;

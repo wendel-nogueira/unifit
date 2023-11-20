@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,6 +13,7 @@ import '../../constants.dart';
 import '../../controllers/account_controller.dart';
 import '../../models/sheet.dart';
 import '../../services/create_sheet.dart';
+import '../../services/get_sheets.dart';
 import '../../utils/exercises_list.dart';
 
 class NewSheetScreen extends StatefulWidget {
@@ -21,8 +24,10 @@ class NewSheetScreen extends StatefulWidget {
 }
 
 class _NewSheetScreen extends State<NewSheetScreen> {
+  List<Sheet> sheets = [];
   Sheet sheet = Sheet();
   bool loading = false;
+  bool loadingSheets = true;
   var accountController = Get.find<AccountController>();
 
   List<Training> trainings = [];
@@ -34,11 +39,31 @@ class _NewSheetScreen extends State<NewSheetScreen> {
   @override
   void initState() {
     super.initState();
+
+    if (mounted) {
+      loadSheets();
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void loadSheets() async {
+    String token = Get.find<AccountController>().token!;
+
+    getSheets(token).then(
+      (value) => {
+        if (mounted)
+          setState(
+            () {
+              sheets = value;
+              loadingSheets = false;
+            },
+          )
+      },
+    );
   }
 
   bool validateForm() {
@@ -63,6 +88,20 @@ class _NewSheetScreen extends State<NewSheetScreen> {
           'o campo ${field['label']} deve ter entre 3 e ${field['length']} caracteres!',
           'error',
         );
+
+        return false;
+      }
+    }
+
+    for (var sheet in sheets) {
+      if (sheet.nome == this.sheet.nome) {
+        showAlert(
+          'erro',
+          'já existe uma ficha com esse nome!',
+          'error',
+        );
+
+        print('já existe uma ficha com esse nome!');
 
         return false;
       }
@@ -408,292 +447,314 @@ class _NewSheetScreen extends State<NewSheetScreen> {
     var fields = sheet.getFormFields();
 
     return MasterPage(
-        title: 'nova ficha',
-        showMenu: false,
-        child: SizedBox(
-          width: width - 2 * defaultPadding,
-          height: height - 80,
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: defaultPadding),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: defaultPaddingCardHorizontal,
-                  vertical: defaultPaddingCardVertical,
-                ),
-                decoration: const BoxDecoration(
-                  color: bgColorWhiteNormal,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(defaultRadiusMedium),
-                  ),
-                  boxShadow: [boxShadowDefault],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: height - (height * 0.59),
-                          child: ListView.builder(
-                            itemCount: fields.length,
-                            itemBuilder: (context, index) {
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: defaultMarginLarge),
-                                  Text(
-                                    fields[index]['label'],
-                                    style: GoogleFonts.roboto(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: fontColorGray,
-                                    ),
-                                    textAlign: TextAlign.left,
-                                  ),
-                                  const SizedBox(height: defaultMarginSmall),
-                                  fields[index]['type'] != 'select'
-                                      ? TextFormField(
-                                          initialValue:
-                                              fields[index]['value'] ?? '',
-                                          keyboardType: TextInputType.text,
-                                          style: GoogleFonts.manrope(
-                                            color: fontColorGray,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          decoration: InputDecoration(
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            isDense: true,
-                                            hintStyle: GoogleFonts.manrope(
-                                              color: fontColorGray,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                            filled: true,
-                                            fillColor: bgColorWhiteLight,
-                                            hintText: fields[index]['label'],
-                                            enabledBorder:
-                                                const OutlineInputBorder(
-                                              borderRadius: borderRadiusSmall,
-                                              borderSide: BorderSide(
-                                                  color: bgColorWhiteDark),
-                                            ),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                              borderRadius: borderRadiusSmall,
-                                              borderSide: BorderSide(
-                                                  color: bgColorBlueNormal),
-                                            ),
-                                            contentPadding: const EdgeInsets
-                                                    .symmetric(
-                                                vertical:
-                                                    defaultPaddingFieldsVertical,
-                                                horizontal:
-                                                    defaultPaddingFieldsHorizontal),
-                                          ),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              sheet.updateValue(
-                                                  fields[index]['atribute'],
-                                                  value);
-                                            });
-                                          },
-                                        )
-                                      : DropdownButtonFormField(
-                                          decoration: InputDecoration(
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            isDense: true,
-                                            hintStyle: GoogleFonts.manrope(
-                                              color: fontColorGray,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                            filled: true,
-                                            fillColor: bgColorWhiteLight,
-                                            hintText: fields[index]['label'],
-                                            enabledBorder:
-                                                const OutlineInputBorder(
-                                              borderRadius: borderRadiusSmall,
-                                              borderSide: BorderSide(
-                                                  color: bgColorWhiteDark),
-                                            ),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                              borderRadius: borderRadiusSmall,
-                                              borderSide: BorderSide(
-                                                  color: bgColorBlueNormal),
-                                            ),
-                                            contentPadding: const EdgeInsets
-                                                    .symmetric(
-                                                vertical:
-                                                    defaultPaddingFieldsVertical,
-                                                horizontal:
-                                                    defaultPaddingFieldsHorizontal),
-                                          ),
-                                          items: [
-                                            for (var option in fields[index]
-                                                ['options'] as List<String>)
-                                              DropdownMenuItem(
-                                                value: option,
-                                                child: Text(option),
+      title: 'nova ficha',
+      showMenu: false,
+      child: SizedBox(
+        width: width - 2 * defaultPadding,
+        height: height - 80,
+        child: !loadingSheets
+            ? Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: defaultPadding),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: defaultPaddingCardHorizontal,
+                      vertical: defaultPaddingCardVertical,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: bgColorWhiteNormal,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(defaultRadiusMedium),
+                      ),
+                      boxShadow: [boxShadowDefault],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: height - (height * 0.59),
+                              child: ListView.builder(
+                                itemCount: fields.length,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                          height: defaultMarginLarge),
+                                      Text(
+                                        fields[index]['label'],
+                                        style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: fontColorGray,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                      const SizedBox(
+                                          height: defaultMarginSmall),
+                                      fields[index]['type'] != 'select'
+                                          ? TextFormField(
+                                              initialValue:
+                                                  fields[index]['value'] ?? '',
+                                              keyboardType: TextInputType.text,
+                                              style: GoogleFonts.manrope(
+                                                color: fontColorGray,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
                                               ),
-                                          ],
-                                          value: fields[index]['value'] !=
-                                                      null &&
-                                                  fields[index]['value'] != ''
-                                              ? fields[index]['value']
-                                              : null,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              sheet.updateValue(
-                                                  fields[index]['atribute'],
-                                                  value);
-                                            });
+                                              decoration: InputDecoration(
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                isDense: true,
+                                                hintStyle: GoogleFonts.manrope(
+                                                  color: fontColorGray,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                                filled: true,
+                                                fillColor: bgColorWhiteLight,
+                                                hintText: fields[index]
+                                                    ['label'],
+                                                enabledBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorWhiteDark),
+                                                ),
+                                                focusedBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorBlueNormal),
+                                                ),
+                                                contentPadding: const EdgeInsets
+                                                        .symmetric(
+                                                    vertical:
+                                                        defaultPaddingFieldsVertical,
+                                                    horizontal:
+                                                        defaultPaddingFieldsHorizontal),
+                                              ),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  sheet.updateValue(
+                                                      fields[index]['atribute'],
+                                                      value);
+                                                });
+                                              },
+                                            )
+                                          : DropdownButtonFormField(
+                                              decoration: InputDecoration(
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                isDense: true,
+                                                hintStyle: GoogleFonts.manrope(
+                                                  color: fontColorGray,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                                filled: true,
+                                                fillColor: bgColorWhiteLight,
+                                                hintText: fields[index]
+                                                    ['label'],
+                                                enabledBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorWhiteDark),
+                                                ),
+                                                focusedBorder:
+                                                    const OutlineInputBorder(
+                                                  borderRadius:
+                                                      borderRadiusSmall,
+                                                  borderSide: BorderSide(
+                                                      color: bgColorBlueNormal),
+                                                ),
+                                                contentPadding: const EdgeInsets
+                                                        .symmetric(
+                                                    vertical:
+                                                        defaultPaddingFieldsVertical,
+                                                    horizontal:
+                                                        defaultPaddingFieldsHorizontal),
+                                              ),
+                                              items: [
+                                                for (var option in fields[index]
+                                                    ['options'] as List<String>)
+                                                  DropdownMenuItem(
+                                                    value: option,
+                                                    child: Text(option),
+                                                  ),
+                                              ],
+                                              value: fields[index]['value'] !=
+                                                          null &&
+                                                      fields[index]['value'] !=
+                                                          ''
+                                                  ? fields[index]['value']
+                                                  : null,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  sheet.updateValue(
+                                                      fields[index]['atribute'],
+                                                      value);
+                                                });
+                                              },
+                                            ),
+                                      if (index == fields.length - 1)
+                                        const SizedBox(
+                                            height: defaultMarginLarger),
+                                      if (index == fields.length - 1)
+                                        TextButton(
+                                          onPressed: () => {
+                                            sendRequest(),
                                           },
-                                        ),
-                                  if (index == fields.length - 1)
-                                    const SizedBox(height: defaultMarginLarger),
-                                  if (index == fields.length - 1)
-                                    TextButton(
-                                      onPressed: () => {
-                                        sendRequest(),
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStateProperty.all<Color>(
-                                                loading
-                                                    ? bgColorGray
-                                                    : statusColorSuccess),
-                                      ),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        child: Text(
-                                          loading ? 'salvando...' : 'salvar',
-                                          style: GoogleFonts.roboto(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                            color: fontColorWhite,
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty
+                                                    .all<Color>(loading
+                                                        ? bgColorGray
+                                                        : statusColorSuccess),
                                           ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ),
-                                  if (index == fields.length - 1)
-                                    TextButton(
-                                      onPressed: () => {
-                                        if (!loading) createTraining(),
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStateProperty.all<Color>(
-                                                loading
-                                                    ? bgColorGray
-                                                    : statusColorInfo),
-                                      ),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        child: Text(
-                                          loading
-                                              ? 'salvando...'
-                                              : 'adicionar treino',
-                                          style: GoogleFonts.roboto(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                            color: fontColorWhite,
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: Text(
+                                              loading
+                                                  ? 'salvando...'
+                                                  : 'salvar',
+                                              style: GoogleFonts.roboto(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                color: fontColorWhite,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
                                           ),
-                                          textAlign: TextAlign.center,
                                         ),
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
+                                      if (index == fields.length - 1)
+                                        TextButton(
+                                          onPressed: () => {
+                                            if (!loading) createTraining(),
+                                          },
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty
+                                                    .all<Color>(loading
+                                                        ? bgColorGray
+                                                        : statusColorInfo),
+                                          ),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: Text(
+                                              loading
+                                                  ? 'salvando...'
+                                                  : 'adicionar treino',
+                                              style: GoogleFonts.roboto(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                color: fontColorWhite,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height:
-                    height - (height * 0.6) - defaultPadding, // fixed height
-                child: ListView.builder(
-                  itemCount: trainings.length,
-                  itemBuilder: (context, index) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: bgColorWhiteNormal,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(defaultRadiusSmall),
-                            ),
-                            boxShadow: [boxShadowDefault],
-                          ),
-                          margin:
-                              const EdgeInsets.only(bottom: defaultPadding / 2),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: defaultPaddingCardHorizontal,
-                                    vertical: defaultPaddingCardVertical),
-                                child: Text(
-                                  trainings[index].nome!,
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 14,
-                                    color: fontColorGray,
-                                  ),
-                                  textAlign: TextAlign.left,
+                  ),
+                  SizedBox(
+                    height: height -
+                        (height * 0.6) -
+                        defaultPadding, // fixed height
+                    child: ListView.builder(
+                      itemCount: trainings.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: const BoxDecoration(
+                                color: bgColorWhiteNormal,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(defaultRadiusSmall),
                                 ),
+                                boxShadow: [boxShadowDefault],
                               ),
-                              InkWell(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: defaultPaddingCardVertical,
-                                      vertical: defaultPaddingCardVertical),
-                                  decoration: const BoxDecoration(
-                                    color: statusColorError,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(defaultRadiusSmall),
+                              margin: const EdgeInsets.only(
+                                  bottom: defaultPadding / 2),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal:
+                                            defaultPaddingCardHorizontal,
+                                        vertical: defaultPaddingCardVertical),
+                                    child: Text(
+                                      trainings[index].nome!,
+                                      style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 14,
+                                        color: fontColorGray,
+                                      ),
+                                      textAlign: TextAlign.left,
                                     ),
                                   ),
-                                  child: const Icon(
-                                    Icons.close_outlined,
-                                    color: fontColorWhite,
-                                    size: 18,
-                                  ),
-                                ),
-                                onTap: () => {
-                                  setState(
-                                    () {
-                                      trainings.removeAt(index);
+                                  InkWell(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal:
+                                              defaultPaddingCardVertical,
+                                          vertical: defaultPaddingCardVertical),
+                                      decoration: const BoxDecoration(
+                                        color: statusColorError,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(defaultRadiusSmall),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_outlined,
+                                        color: fontColorWhite,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    onTap: () => {
+                                      setState(
+                                        () {
+                                          trainings.removeAt(index);
+                                        },
+                                      ),
                                     },
                                   ),
-                                },
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
+                ],
               )
-            ],
-          ),
-        ));
+            : const Center(
+                child: CircularProgressIndicator(),
+              ),
+      ),
+    );
   }
 }
 
@@ -796,6 +857,7 @@ class _ExerciseRow extends State<ExerciseRow> {
             ),
           ),
           Material(
+            color: Colors.transparent,
             child: InkWell(
                 child: Container(
                   padding: const EdgeInsets.symmetric(

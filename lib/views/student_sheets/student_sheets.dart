@@ -9,6 +9,7 @@ import '../../constants.dart';
 import '../../controllers/account_controller.dart';
 import '../../models/sheet.dart';
 import '../../models/user.dart';
+import '../../services/delete_student_sheet.dart';
 import '../../services/get_student_sheets.dart';
 import '../../services/get_students.dart';
 import '../../utils/birth_date_format.dart';
@@ -138,6 +139,16 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
     );
   }
 
+  void removeSheet(int sheetId) {
+    var token = Get.find<AccountController>().token!;
+
+    deleteStudentSheet(token, studentId, sheetId).then(
+      (value) => {
+        refresh(),
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -150,8 +161,17 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
       dialogSize = 380;
     }
 
+    var accountController = Get.find<AccountController>();
+    var type = accountController.type;
+
     return MasterPage(
       title: 'fichas do aluno',
+      backButtonFunction: () => {
+        if (type == 1)
+          Get.toNamed('/students-list')
+        else
+          Get.toNamed('/my-sheets'),
+      },
       showMenu: false,
       child: Column(
         children: [
@@ -249,6 +269,7 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
                                               const SizedBox(
                                                   height: defaultMarginSmall),
                                               Material(
+                                                color: bgColorWhiteLight,
                                                 child: DropdownButtonFormField(
                                                   decoration: InputDecoration(
                                                     floatingLabelBehavior:
@@ -317,6 +338,7 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
                                               const SizedBox(
                                                   height: defaultMarginSmall),
                                               Material(
+                                                color: bgColorWhiteLight,
                                                 child: TextFormField(
                                                   decoration: InputDecoration(
                                                     floatingLabelBehavior:
@@ -368,8 +390,8 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
                                               const SizedBox(height: 24),
                                               TextButton(
                                                 onPressed: () => {
-                                                  addSheet(),
                                                   Get.back(),
+                                                  addSheet(),
                                                 },
                                                 style: ButtonStyle(
                                                   backgroundColor:
@@ -510,8 +532,113 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
                                   ),
                                 ),
                                 onTap: () {
-                                  Get.toNamed(
-                                      '/sheets-details/${sheets[index].idficha}');
+                                  Get.dialog(
+                                    Center(
+                                      child: Container(
+                                        width: dialogSize,
+                                        height: 235,
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.all(
+                                            defaultPadding),
+                                        decoration: const BoxDecoration(
+                                          color: bgColorWhiteNormal,
+                                          borderRadius: borderRadiusSmall,
+                                          boxShadow: [boxShadowDefault],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              'selecione a opção desejada',
+                                              style: GoogleFonts.manrope(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14,
+                                                color: fontColorGray,
+                                                textStyle: const TextStyle(
+                                                  decoration:
+                                                      TextDecoration.none,
+                                                ),
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(height: 24),
+                                            TextButton(
+                                              onPressed: () => {
+                                                Get.back(),
+                                                Get.toNamed(
+                                                    '/sheets-details/${sheets[index].idficha}'),
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all<
+                                                            Color>(
+                                                        bgColorBlueLightSecondary),
+                                              ),
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  'visualizar ficha',
+                                                  style: GoogleFonts.roboto(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    color: fontColorWhite,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => {
+                                                Get.back(),
+                                                removeSheet(
+                                                    sheets[index].idficha),
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all<
+                                                            Color>(
+                                                        statusColorWarning),
+                                              ),
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  'remover ficha',
+                                                  style: GoogleFonts.roboto(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    color: fontColorWhite,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => {
+                                                Get.back(),
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all<
+                                                            Color>(
+                                                        statusColorError),
+                                              ),
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  'fechar',
+                                                  style: GoogleFonts.roboto(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    color: fontColorWhite,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(height: 12),

@@ -232,6 +232,7 @@ class _EditUserScreen extends State<EditUserScreen> {
               ? 'atualizar professor'
               : 'atualizar téc. adm.',
       showMenu: false,
+      backButtonFunction: () => Get.toNamed('/students-list'),
       child: Column(
         children: <Widget>[
           loadingFields
