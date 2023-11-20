@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:unifit/models/assessment.dart';
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> createAssessment(
-    String token, Assessment assessment, int studentId) async {
-  String api = '$endpoint/avaliacao';
+Future<int> createCarga(
+    String token, int studentId, int idexercicio, int carga) async {
+  String api = '$endpoint/carga';
 
-  Map<String, dynamic> body = assessment.toJson(studentId);
+  Map<String, dynamic> body = {
+    'idexercicio': idexercicio.toString(),
+    'idaluno': studentId.toString(),
+    'carga': carga.toString(),
+  };
 
   var response = await http
       .post(
@@ -35,10 +38,10 @@ Future<int> createAssessment(
     },
   );
 
-  if (response.statusCode == 200) {
-    showAlert('avaliação criada', 'avaliação criada com sucesso!', 'success');
+  if (response.statusCode == 201) {
+    showAlert('carga registrada', 'carga registrada com sucesso!', 'success');
 
-    return 200;
+    return 201;
   } else if (json.decode(response.body)['message'] ==
       'Token de autenticação inválido') {
     showAlert('sessão expirada',
@@ -47,8 +50,8 @@ Future<int> createAssessment(
     return 401;
   } else {
     showAlert(
-        'erro ao criar avaliação',
-        'não foi possível criar a avaliação, tente novamente mais tarde!',
+        'erro ao registrar carga',
+        'não foi possível registrar a carga, verifique os dados e tente novamente!',
         'error');
 
     return 500;

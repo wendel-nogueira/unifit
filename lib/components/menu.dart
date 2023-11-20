@@ -90,6 +90,7 @@ class _MenuState extends State<Menu> {
                 children: [
                   InkWell(
                     onTap: () => {
+                      Get.offAllNamed(userRoutes[index]['route']),
                       if (activeRoute != userRoutes[index]['route'])
                         {
                           Get.offNamed(userRoutes[index]['route']),

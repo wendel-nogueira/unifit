@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:unifit/models/assessment.dart';
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> createAssessment(
-    String token, Assessment assessment, int studentId) async {
+Future<int> updateAssessment(String token, int id, double peso) async {
   String api = '$endpoint/avaliacao';
 
-  Map<String, dynamic> body = assessment.toJson(studentId);
+  Map<String, dynamic> body = {
+    'id': id.toString(),
+    'peso': peso.toString(),
+  };
 
   var response = await http
-      .post(
+      .patch(
     Uri.parse(api),
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -36,7 +37,7 @@ Future<int> createAssessment(
   );
 
   if (response.statusCode == 200) {
-    showAlert('avaliação criada', 'avaliação criada com sucesso!', 'success');
+    showAlert('peso atualizado', 'peso atualizado com sucesso!', 'success');
 
     return 200;
   } else if (json.decode(response.body)['message'] ==
@@ -47,8 +48,8 @@ Future<int> createAssessment(
     return 401;
   } else {
     showAlert(
-        'erro ao criar avaliação',
-        'não foi possível criar a avaliação, tente novamente mais tarde!',
+        'erro ao atualizar peso',
+        'não foi possível atualizar o peso, tente novamente mais tarde!',
         'error');
 
     return 500;

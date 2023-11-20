@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:unifit/components/page.dart';
 import 'package:unifit/components/student_card.dart';
 import 'package:unifit/constants.dart';
@@ -27,6 +25,7 @@ class _FrequencyListScreen extends State<FrequencyListScreen> {
   List<User> allStudents = [];
   DateTime? initDate;
   DateTime? endDate;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -67,7 +66,20 @@ class _FrequencyListScreen extends State<FrequencyListScreen> {
 
     searched = true;
     students = [];
-    showLoading();
+
+    Dialog dialog = const Dialog(
+      backgroundColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      elevation: 0,
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => dialog,
+    );
 
     List<DateTime> dates = [];
 
@@ -98,7 +110,7 @@ class _FrequencyListScreen extends State<FrequencyListScreen> {
       students = users;
     });
 
-    hideLoading();
+    if (context.mounted) Navigator.pop(context);
   }
 
   String formatDateTime(DateTime dateTime) {

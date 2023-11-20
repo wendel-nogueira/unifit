@@ -25,27 +25,31 @@ class _SheetListScreen extends State<SheetListScreen> {
     super.initState();
 
     if (mounted) {
-      String token = Get.find<AccountController>().token!;
-
-      getSheets(token).then(
-        (value) => {
-          if (mounted)
-            setState(
-              () {
-                sheets = value;
-                sheetsFiltered = value;
-
-                loading = false;
-              },
-            )
-        },
-      );
+      loadSheets();
     }
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void loadSheets() async {
+    String token = Get.find<AccountController>().token!;
+
+    getSheets(token).then(
+      (value) => {
+        if (mounted)
+          setState(
+            () {
+              sheets = value;
+              sheetsFiltered = value;
+
+              loading = false;
+            },
+          )
+      },
+    );
   }
 
   @override

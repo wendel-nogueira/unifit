@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:unifit/models/assessment.dart';
@@ -128,8 +129,8 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                     const SizedBox(height: 24),
                     TextButton(
                       onPressed: () => {
-                        Get.toNamed(
-                          '/new-user-anamnesis/${studentId.toString()}',
+                        Get.offAndToNamed(
+                          '/view-user-anamnesis/${studentId.toString()}',
                         ),
                       },
                       style: ButtonStyle(
@@ -221,48 +222,108 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                             textAlign: TextAlign.left,
                           ),
                           const SizedBox(height: defaultMarginSmall),
-                          TextFormField(
-                            keyboardType: fields[index]['type'] == 'number'
-                                ? TextInputType.number
-                                : TextInputType.text,
-                            initialValue: fields[index]['value'].toString(),
-                            style: GoogleFonts.manrope(
-                              color: fontColorGray,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            decoration: InputDecoration(
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.never,
-                              isDense: true,
-                              hintStyle: GoogleFonts.manrope(
-                                color: fontColorGray,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              filled: true,
-                              fillColor: bgColorWhiteNormal,
-                              hintText: fields[index]['label'],
-                              enabledBorder: const OutlineInputBorder(
-                                borderRadius: borderRadiusSmall,
-                                borderSide: BorderSide(color: bgColorWhiteDark),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderRadius: borderRadiusSmall,
-                                borderSide:
-                                    BorderSide(color: bgColorBlueNormal),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: defaultPaddingFieldsVertical,
-                                  horizontal: defaultPaddingFieldsHorizontal),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                assessment.updateValue(
-                                    fields[index]['atribute'], value);
-                              });
-                            },
-                          ),
+                          fields[index]['type'] != 'select'
+                              ? TextFormField(
+                                  initialValue: fields[index]['value'] ?? '',
+                                  keyboardType:
+                                      fields[index]['type'] == 'number'
+                                          ? TextInputType.number
+                                          : TextInputType.text,
+                                  inputFormatters: [
+                                    if (fields[index]['type'] == 'number')
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'^\d+\.?\d{0,2}')),
+                                  ],
+                                  style: GoogleFonts.manrope(
+                                    color: fontColorGray,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  decoration: InputDecoration(
+                                    floatingLabelBehavior:
+                                        FloatingLabelBehavior.never,
+                                    isDense: true,
+                                    hintStyle: GoogleFonts.manrope(
+                                      color: fontColorGray,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    filled: true,
+                                    fillColor: bgColorWhiteNormal,
+                                    hintText: fields[index]['label'],
+                                    enabledBorder: const OutlineInputBorder(
+                                      borderRadius: borderRadiusSmall,
+                                      borderSide:
+                                          BorderSide(color: bgColorWhiteDark),
+                                    ),
+                                    focusedBorder: const OutlineInputBorder(
+                                      borderRadius: borderRadiusSmall,
+                                      borderSide:
+                                          BorderSide(color: bgColorBlueNormal),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: defaultPaddingFieldsVertical,
+                                        horizontal:
+                                            defaultPaddingFieldsHorizontal),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      if (value.isNotEmpty) {
+                                        value = value.replaceAll(',', '.');
+
+                                        assessment.updateValue(
+                                            fields[index]['atribute'], value);
+                                      }
+                                    });
+                                  },
+                                )
+                              : DropdownButtonFormField(
+                                  decoration: InputDecoration(
+                                    floatingLabelBehavior:
+                                        FloatingLabelBehavior.never,
+                                    isDense: true,
+                                    hintStyle: GoogleFonts.manrope(
+                                      color: fontColorGray,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    filled: true,
+                                    fillColor: bgColorWhiteNormal,
+                                    hintText: fields[index]['label'],
+                                    enabledBorder: const OutlineInputBorder(
+                                      borderRadius: borderRadiusSmall,
+                                      borderSide:
+                                          BorderSide(color: bgColorWhiteDark),
+                                    ),
+                                    focusedBorder: const OutlineInputBorder(
+                                      borderRadius: borderRadiusSmall,
+                                      borderSide:
+                                          BorderSide(color: bgColorBlueNormal),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: defaultPaddingFieldsVertical,
+                                        horizontal:
+                                            defaultPaddingFieldsHorizontal),
+                                  ),
+                                  items: [
+                                    for (var option in fields[index]['options']
+                                        as List<String>)
+                                      DropdownMenuItem(
+                                        value: option,
+                                        child: Text(option),
+                                      ),
+                                  ],
+                                  value: fields[index]['value'] != null &&
+                                          fields[index]['value'] != ''
+                                      ? fields[index]['value']
+                                      : null,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      assessment.updateValue(
+                                          fields[index]['atribute'], value);
+                                    });
+                                  },
+                                ),
                           if (index == fields.length - 1)
                             const SizedBox(height: defaultMarginLarger),
                           if (index == fields.length - 1)

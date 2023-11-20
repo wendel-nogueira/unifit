@@ -36,18 +36,3 @@ showAlert(String title, String message, String status) => Get.snackbar(
         textAlign: TextAlign.center,
       ),
     );
-
-showLoading() => Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(
-          color: fontColorWhite,
-          backgroundColor: bgColorBlueLightSecondary,
-        ),
-      ),
-      barrierDismissible: false,
-      name: 'loading',
-      barrierColor: Colors.black.withOpacity(0.5),
-      arguments: 'loading',
-    );
-
-hideLoading() => Get.back(closeOverlays: true);

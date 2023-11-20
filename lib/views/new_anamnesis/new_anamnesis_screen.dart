@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,9 +9,7 @@ import 'package:unifit/models/user.dart';
 import 'package:unifit/utils/alert.dart';
 
 import '../../services/create_anamnesis.dart';
-import '../../services/get_anamnesis.dart';
 import '../../services/get_students.dart';
-import '../../utils/birth_date_format.dart';
 
 class NewAnamnesisScreen extends StatefulWidget {
   const NewAnamnesisScreen({super.key});
@@ -26,12 +23,9 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
   User? student;
   Anamnesis anamnesis = Anamnesis();
   bool loadingStudent = true;
-  bool loadingAnamnesis = true;
 
   var accountController = Get.find<AccountController>();
   bool loading = false;
-
-  bool newAnamnesis = false;
 
   @override
   void initState() {
@@ -58,18 +52,6 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
                     );
 
                     loadingStudent = false;
-
-                    getAnamnesis(token, studentId).then(
-                      (value) => {
-                        if (mounted)
-                          setState(
-                            () {
-                              anamnesis = value;
-                              loadingAnamnesis = false;
-                            },
-                          ),
-                      },
-                    );
                   }
                 },
               )
@@ -114,44 +96,6 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
     return true;
   }
 
-  void newAnamnesisForm() {
-    var formFields = anamnesis.getFormFields();
-
-    setState(() {
-      loadingAnamnesis = true;
-      newAnamnesis = true;
-
-      for (var field in formFields) {
-        anamnesis.updateValue(field['atribute'], '');
-      }
-
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          loadingAnamnesis = false;
-        });
-      });
-    });
-  }
-
-  void loadingAnamnesisData() {
-    setState(() {
-      loadingAnamnesis = true;
-    });
-
-    getAnamnesis(accountController.token!, studentId).then(
-      (value) => {
-        if (mounted)
-          setState(
-            () {
-              anamnesis = value;
-              loadingAnamnesis = false;
-              newAnamnesis = false;
-            },
-          ),
-      },
-    );
-  }
-
   void sendRequest() {
     if (validateForm() && !loading) {
       setState(() {
@@ -165,7 +109,20 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
         });
 
         if (value == 200) {
-          Get.back();
+          showAlert(
+              'anamnese criada', 'anamnese criada com sucesso!', 'success');
+
+          Get.offAllNamed('/students-list');
+        } else if (value == 401) {
+          showAlert('sessão expirada',
+              'sua sessão expirou, por favor, faça login novamente!', 'error');
+
+          Get.offAllNamed('/login');
+        } else {
+          showAlert(
+              'erro de conexão',
+              'não foi possível conectar ao servidor, tente novamente mais tarde!',
+              'error');
         }
       }).catchError((error) {
         setState(() {
@@ -184,7 +141,7 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
     return MasterPage(
       title: 'anamnese',
       showMenu: false,
-      backButtonFunction: () => Get.toNamed('/students-list'),
+      backButtonFunction: () => Get.back(),
       child: Container(
         width: width - 2 * defaultPadding,
         height: height - 2 * defaultPadding - 64,
@@ -202,285 +159,175 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
         ),
         child: !loadingStudent
             ? Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'nome: ${student != null ? student!.nome : 'erro'}',
-                    style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
-                      color: fontColorGray,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'curso: ${student != null ? student!.curso : ''}',
-                    style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
-                      color: fontColorGray,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'email: ${student != null ? student!.email : ''}',
-                    style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
-                      color: fontColorGray,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'nascimento: ${student != null ? verifyAbirthDateFormat(student!.nascimento.toString()) : ''}',
-                    style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
-                      color: fontColorGray,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  // divider
-                  const SizedBox(height: 12),
-                  !newAnamnesis
-                      ? TextButton(
-                          onPressed: () => {
-                            newAnamnesisForm(),
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                statusColorInfo),
-                          ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Text(
-                              'nova anamnese',
+                children: <Widget>[
+                  SizedBox(
+                    height: height - 140, // fixed height
+                    child: ListView.builder(
+                      itemCount: fields.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: defaultMarginLarge),
+                            Text(
+                              fields[index]['label'],
                               style: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 16,
-                                color: fontColorWhite,
+                                color: fontColorGray,
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.left,
                             ),
-                          ),
-                        )
-                      : const SizedBox(),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    height: 1,
-                    color: bgColorWhiteDark,
-                  ),
-                  const SizedBox(height: 12),
-                  !loadingAnamnesis
-                      ? Column(
-                          children: <Widget>[
-                            SizedBox(
-                              height: newAnamnesis
-                                  ? height - 268
-                                  : height - 316, // fixed height
-                              child: ListView.builder(
-                                itemCount: fields.length,
-                                itemBuilder: (context, index) {
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(
-                                          height: defaultMarginLarge),
-                                      Text(
-                                        fields[index]['label'],
-                                        style: GoogleFonts.roboto(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: fontColorGray,
-                                        ),
-                                        textAlign: TextAlign.left,
+                            const SizedBox(height: defaultMarginSmall),
+                            fields[index]['type'] != 'select'
+                                ? TextFormField(
+                                    initialValue: fields[index]['value'] ?? '',
+                                    keyboardType: TextInputType.text,
+                                    style: GoogleFonts.manrope(
+                                      color: fontColorGray,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    decoration: InputDecoration(
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.never,
+                                      isDense: true,
+                                      hintStyle: GoogleFonts.manrope(
+                                        color: fontColorGray,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
                                       ),
-                                      const SizedBox(
-                                          height: defaultMarginSmall),
-                                      fields[index]['type'] != 'select'
-                                          ? TextFormField(
-                                              initialValue:
-                                                  fields[index]['value'] ?? '',
-                                              keyboardType: TextInputType.text,
-                                              style: GoogleFonts.manrope(
-                                                color: fontColorGray,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                              ),
-                                              readOnly: !newAnamnesis,
-                                              decoration: InputDecoration(
-                                                floatingLabelBehavior:
-                                                    FloatingLabelBehavior.never,
-                                                isDense: true,
-                                                hintStyle: GoogleFonts.manrope(
-                                                  color: fontColorGray,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                                filled: true,
-                                                fillColor: bgColorWhiteLight,
-                                                hintText: fields[index]
-                                                    ['label'],
-                                                enabledBorder:
-                                                    const OutlineInputBorder(
-                                                  borderRadius:
-                                                      borderRadiusSmall,
-                                                  borderSide: BorderSide(
-                                                      color: bgColorWhiteDark),
-                                                ),
-                                                focusedBorder:
-                                                    const OutlineInputBorder(
-                                                  borderRadius:
-                                                      borderRadiusSmall,
-                                                  borderSide: BorderSide(
-                                                      color: bgColorBlueNormal),
-                                                ),
-                                                contentPadding: const EdgeInsets
-                                                        .symmetric(
-                                                    vertical:
-                                                        defaultPaddingFieldsVertical,
-                                                    horizontal:
-                                                        defaultPaddingFieldsHorizontal),
-                                              ),
-                                              onChanged: newAnamnesis
-                                                  ? (value) {
-                                                      setState(() {
-                                                        anamnesis.updateValue(
-                                                            fields[index]
-                                                                ['atribute'],
-                                                            value);
-                                                      });
-                                                    }
-                                                  : null,
-                                            )
-                                          : DropdownButtonFormField(
-                                              decoration: InputDecoration(
-                                                floatingLabelBehavior:
-                                                    FloatingLabelBehavior.never,
-                                                isDense: true,
-                                                hintStyle: GoogleFonts.manrope(
-                                                  color: fontColorGray,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                                filled: true,
-                                                fillColor: bgColorWhiteLight,
-                                                hintText: fields[index]
-                                                    ['label'],
-                                                enabledBorder:
-                                                    const OutlineInputBorder(
-                                                  borderRadius:
-                                                      borderRadiusSmall,
-                                                  borderSide: BorderSide(
-                                                      color: bgColorWhiteDark),
-                                                ),
-                                                focusedBorder:
-                                                    const OutlineInputBorder(
-                                                  borderRadius:
-                                                      borderRadiusSmall,
-                                                  borderSide: BorderSide(
-                                                      color: bgColorBlueNormal),
-                                                ),
-                                                contentPadding: const EdgeInsets
-                                                        .symmetric(
-                                                    vertical:
-                                                        defaultPaddingFieldsVertical,
-                                                    horizontal:
-                                                        defaultPaddingFieldsHorizontal),
-                                              ),
-                                              items: [
-                                                for (var option in fields[index]
-                                                    ['options'] as List<String>)
-                                                  DropdownMenuItem(
-                                                    value: option,
-                                                    child: Text(option),
-                                                  ),
-                                              ],
-                                              value: fields[index]['value'] !=
-                                                          null &&
-                                                      fields[index]['value'] !=
-                                                          ''
-                                                  ? fields[index]['value']
-                                                  : null,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  anamnesis.updateValue(
-                                                      fields[index]['atribute'],
-                                                      value);
-                                                });
-                                              },
-                                            ),
-                                      if (index == fields.length - 1)
-                                        const SizedBox(
-                                            height: defaultMarginLarger),
-                                      if (index == fields.length - 1 &&
-                                          newAnamnesis)
-                                        TextButton(
-                                          onPressed: () => {
-                                            sendRequest(),
-                                          },
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty
-                                                    .all<Color>(loading
-                                                        ? bgColorGray
-                                                        : statusColorSuccess),
-                                          ),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            child: Text(
-                                              loading
-                                                  ? 'salvando...'
-                                                  : 'salvar',
-                                              style: GoogleFonts.roboto(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 16,
-                                                color: fontColorWhite,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ),
-                                      if (index == fields.length - 1 &&
-                                          newAnamnesis)
-                                        TextButton(
-                                          onPressed: () =>
-                                              {loadingAnamnesisData()},
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(statusColorError),
-                                          ),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            child: Text(
-                                              'cancelar',
-                                              style: GoogleFonts.roboto(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 16,
-                                                color: fontColorWhite,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
+                                      filled: true,
+                                      fillColor: bgColorWhiteLight,
+                                      hintText: fields[index]['label'],
+                                      enabledBorder: const OutlineInputBorder(
+                                        borderRadius: borderRadiusSmall,
+                                        borderSide:
+                                            BorderSide(color: bgColorWhiteDark),
+                                      ),
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderRadius: borderRadiusSmall,
+                                        borderSide: BorderSide(
+                                            color: bgColorBlueNormal),
+                                      ),
+                                      contentPadding: const EdgeInsets
+                                              .symmetric(
+                                          vertical:
+                                              defaultPaddingFieldsVertical,
+                                          horizontal:
+                                              defaultPaddingFieldsHorizontal),
+                                    ),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        anamnesis.updateValue(
+                                            fields[index]['atribute'], value);
+                                      });
+                                    },
+                                  )
+                                : DropdownButtonFormField(
+                                    decoration: InputDecoration(
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.never,
+                                      isDense: true,
+                                      hintStyle: GoogleFonts.manrope(
+                                        color: fontColorGray,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      filled: true,
+                                      fillColor: bgColorWhiteLight,
+                                      hintText: fields[index]['label'],
+                                      enabledBorder: const OutlineInputBorder(
+                                        borderRadius: borderRadiusSmall,
+                                        borderSide:
+                                            BorderSide(color: bgColorWhiteDark),
+                                      ),
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderRadius: borderRadiusSmall,
+                                        borderSide: BorderSide(
+                                            color: bgColorBlueNormal),
+                                      ),
+                                      contentPadding: const EdgeInsets
+                                              .symmetric(
+                                          vertical:
+                                              defaultPaddingFieldsVertical,
+                                          horizontal:
+                                              defaultPaddingFieldsHorizontal),
+                                    ),
+                                    items: [
+                                      for (var option in fields[index]
+                                          ['options'] as List<String>)
+                                        DropdownMenuItem(
+                                          value: option,
+                                          child: Text(option),
                                         ),
                                     ],
-                                  );
+                                    value: fields[index]['value'] != null &&
+                                            fields[index]['value'] != ''
+                                        ? fields[index]['value']
+                                        : null,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        anamnesis.updateValue(
+                                            fields[index]['atribute'], value);
+                                      });
+                                    },
+                                  ),
+                            if (index == fields.length - 1)
+                              const SizedBox(height: defaultMarginLarger),
+                            if (index == fields.length - 1)
+                              TextButton(
+                                onPressed: () => {
+                                  sendRequest(),
                                 },
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(loading
+                                          ? bgColorGray
+                                          : statusColorSuccess),
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    loading ? 'salvando...' : 'salvar',
+                                    style: GoogleFonts.roboto(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: fontColorWhite,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               ),
-                            ),
+                            if (index == fields.length - 1)
+                              TextButton(
+                                onPressed: () => {
+                                  Get.back(),
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          statusColorError),
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    'cancelar',
+                                    style: GoogleFonts.roboto(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: fontColorWhite,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
                           ],
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               )
             : const Center(

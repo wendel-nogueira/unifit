@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:unifit/config/config.dart';
 import 'package:unifit/models/exercise.dart';
+import 'package:unifit/services/create_carga.dart';
 import 'package:unifit/services/get_sheet.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:unifit/services/get_student_sheets.dart';
+import 'package:unifit/utils/alert.dart';
 
 import '../../components/page.dart';
 import '../../constants.dart';
 import '../../controllers/account_controller.dart';
 import '../../models/sheet.dart';
+import '../../services/get_student_load.dart';
 
 class ViewSheetScreen extends StatefulWidget {
   const ViewSheetScreen({super.key});
@@ -28,12 +31,25 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
   final GlobalKey<_TrainingNameTextState> _trainingNameTextKey =
       GlobalKey<_TrainingNameTextState>();
 
+  List<dynamic> loans = [];
+
   @override
   void initState() {
     super.initState();
 
     if (mounted) {
-      setState(() {
+      getInfo();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void getInfo() {
+    setState(
+      () {
         var queryParams = Get.parameters;
 
         if (queryParams['id'] != null) {
@@ -78,20 +94,39 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
 
                       sheet = selectedSheet;
 
-                      loading = false;
+                      getStudentLoad(token, studentId).then(
+                        (value) => {
+                          setState(
+                            () {
+                              loans = value;
+
+                              for (var element in sheet!.treinos) {
+                                for (var exercise in element.exercicios) {
+                                  var loan = loans.firstWhere(
+                                      (element) =>
+                                          element['exercicio_idexercicio'] ==
+                                          exercise.idexercicio,
+                                      orElse: () => null);
+
+                                  if (loan != null && loan['carga'] != null) {
+                                    exercise.peso = loan['carga'].toDouble();
+                                  }
+                                }
+                              }
+
+                              loading = false;
+                            },
+                          )
+                        },
+                      );
                     }
                   },
                 )
             },
           );
         }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+      },
+    );
   }
 
   void showExercise(String name, String dica, String path) {
@@ -106,7 +141,8 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
 
     if (path != '') {
       heightDialog += 160;
-      heightDialog += defaultPaddingCardVertical;
+    } else {
+      heightDialog += 10;
     }
 
     var lines = (dica.length / 40).ceil();
@@ -157,8 +193,8 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
               const SizedBox(height: defaultPaddingCardVertical),
               path != ''
                   ? Container(
-                      width: width - 2 * defaultPadding,
-                      height: 160,
+                      width: 140,
+                      height: 140,
                       decoration: const BoxDecoration(
                         color: bgColorWhiteNormal,
                         borderRadius: BorderRadius.all(
@@ -169,6 +205,10 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                       child: Image.network(
                         path,
                         fit: BoxFit.cover,
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          return const Icon(Icons.close_rounded);
+                        },
                       ),
                     )
                   : const SizedBox(),
@@ -202,8 +242,66 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
     );
   }
 
-  double calculate1RM(int peso, int repeticoes) {
-    double result = peso * (1 + 0.0333 * repeticoes);
+  int calculate1RM(int peso, int repeticoes, String nome) {
+    var accountController = Get.find<AccountController>();
+    var objetivo = accountController.user!.objetivo.toLowerCase();
+    var objetivos = [
+      'força pura',
+      'força',
+      'hipertrofia',
+      'resistência',
+      'perda de peso'
+    ];
+
+    if (!objetivos.contains(objetivo)) {
+      showAlert(
+        'erro',
+        'erro ao calcular a carga máxima, verifique o seu objetivo!',
+        'error',
+      );
+
+      return 0;
+    }
+
+    double coeficiente = 0;
+
+    switch (objetivo) {
+      case 'força pura':
+        coeficiente = 0.94;
+        break;
+      case 'força':
+        coeficiente = 0.86;
+        break;
+      case 'hipertrofia':
+        coeficiente = 0.76;
+        break;
+      case 'resistência':
+        coeficiente = 0.68;
+        break;
+      case 'perda de peso':
+        coeficiente = 0.60;
+        break;
+      default:
+        coeficiente = 0;
+        break;
+    }
+
+    int result = peso * (1 + (0.0333 * repeticoes * coeficiente)).round();
+    Exercise? exercise;
+
+    for (var element in sheet!.treinos) {
+      if (element.exercicios.any((element) => element.nome == nome)) {
+        exercise =
+            element.exercicios.firstWhere((element) => element.nome == nome);
+      }
+    }
+
+    var token = accountController.token!;
+    var studentId = accountController.user!.idAluno;
+
+    if (exercise != null) {
+      createCarga(token, studentId, exercise.idexercicio, result);
+    }
 
     return result;
   }
@@ -264,7 +362,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'peso (kg)',
+                      'carga atual (kg)',
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -275,6 +373,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                     ),
                     const SizedBox(height: defaultMarginSmall),
                     Material(
+                      color: Colors.transparent,
                       child: TextFormField(
                         initialValue: peso.toString(),
                         keyboardType: TextInputType.number,
@@ -283,6 +382,10 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+\.?\d{0,2}')),
+                        ],
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.never,
                           isDense: true,
@@ -294,7 +397,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                           ),
                           filled: true,
                           fillColor: bgColorWhiteLight,
-                          hintText: 'informe o peso (kg)',
+                          hintText: 'informe a carga atual (kg)',
                           enabledBorder: const OutlineInputBorder(
                             borderRadius: borderRadiusSmall,
                             borderSide: BorderSide(color: bgColorWhiteDark),
@@ -325,6 +428,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                     ),
                     const SizedBox(height: defaultMarginSmall),
                     Material(
+                      color: Colors.transparent,
                       child: TextFormField(
                         initialValue: repeticoes.toString(),
                         keyboardType: TextInputType.number,
@@ -333,6 +437,10 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
+                        inputFormatters: [
+                          // only numbers
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d+')),
+                        ],
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.never,
                           isDense: true,
@@ -374,13 +482,14 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                         element.exercicios
                                 .firstWhere((element) => element.nome == name)
                                 .peso =
-                            double.parse(calculate1RM(peso, repeticoes)
+                            double.parse(calculate1RM(peso, repeticoes, name)
                                 .toStringAsFixed(2));
                       }
                     }
 
                     cardContent.updatePeso(double.parse(
-                        calculate1RM(peso, repeticoes).toStringAsFixed(2)));
+                        calculate1RM(peso, repeticoes, name)
+                            .toStringAsFixed(2)));
 
                     Get.back();
                   })
@@ -705,6 +814,8 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                               return Column(
                                                                 children: [
                                                                   Material(
+                                                                    color: Colors
+                                                                        .transparent,
                                                                     child:
                                                                         InkWell(
                                                                       onTap:
@@ -737,15 +848,25 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                                               horizontal: defaultPaddingCardHorizontal,
                                                                               vertical: defaultPaddingCardVertical),
                                                                           child: type == 1
-                                                                              ? Text(
-                                                                                  training[training.keys.elementAt(indexCol)][indexCol2],
-                                                                                  style: GoogleFonts.manrope(
-                                                                                    fontWeight: FontWeight.normal,
-                                                                                    fontSize: 14,
-                                                                                    color: fontColorGray,
-                                                                                    decoration: TextDecoration.none,
-                                                                                  ),
-                                                                                  textAlign: TextAlign.left,
+                                                                              ? Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                  children: [
+                                                                                    Text(
+                                                                                      training[training.keys.elementAt(indexCol)][indexCol2],
+                                                                                      style: GoogleFonts.manrope(
+                                                                                        fontWeight: FontWeight.normal,
+                                                                                        fontSize: 14,
+                                                                                        color: fontColorGray,
+                                                                                        decoration: TextDecoration.none,
+                                                                                      ),
+                                                                                      textAlign: TextAlign.left,
+                                                                                    ),
+                                                                                    const Icon(
+                                                                                      Icons.info_outline_rounded,
+                                                                                      color: fontColorBlue,
+                                                                                      size: 16,
+                                                                                    ),
+                                                                                  ],
                                                                                 )
                                                                               : Column(
                                                                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,7 +885,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                                                           ),
                                                                                         ),
                                                                                         const Icon(
-                                                                                          Icons.more_vert,
+                                                                                          Icons.info_outline_rounded,
                                                                                           color: fontColorBlue,
                                                                                           size: 16,
                                                                                         ),
@@ -945,7 +1066,7 @@ class _CardContent extends State<CardContent> {
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(
-        'séries: ${widget.series}',
+        'séries: ${widget.series == -1 ? 'n/i' : widget.series}',
         style: GoogleFonts.manrope(
           fontWeight: FontWeight.w400,
           fontSize: 16,
@@ -955,7 +1076,7 @@ class _CardContent extends State<CardContent> {
       ),
       const SizedBox(height: 6),
       Text(
-        'repetições: ${widget.repeticoes}',
+        'repetições:  ${widget.repeticoes == -1 ? 'n/i' : widget.repeticoes}',
         style: GoogleFonts.manrope(
           fontWeight: FontWeight.w400,
           fontSize: 16,

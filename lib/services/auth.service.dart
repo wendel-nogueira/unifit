@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,8 @@ import 'package:unifit/models/user.dart';
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<void> auth(String email, String password, int type) async {
+Future<void> auth(
+    String email, String password, int type, BuildContext context) async {
   if (email.isEmpty || password.isEmpty) {
     showAlert('campos inválidos', 'preencha todos os campos!', 'error');
     return;
@@ -22,16 +24,28 @@ Future<void> auth(String email, String password, int type) async {
     return;
   }
 
+  Dialog dialog = const Dialog(
+    backgroundColor: Colors.transparent,
+    shadowColor: Colors.transparent,
+    elevation: 0,
+    child: Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => dialog,
+  );
+
   const Map<int, String> endpointAuthType = {
     0: 'login-aluno', // 0 = aluno
     1: 'login-professor', // 1 = professor
-    2: 'login-aluno', // 2 = tec. adm.
+    2: 'login-tecnico', // 2 = tec. adm.
   };
 
   String api = '$endpoint/${endpointAuthType[type]}';
   Map<String, String> body = {'email': email, 'password': password};
-
-  showLoading();
 
   var response = await http
       .post(
@@ -56,6 +70,8 @@ Future<void> auth(String email, String password, int type) async {
     },
   );
 
+  if (context.mounted) Navigator.pop(context);
+
   if (response.statusCode == 200) {
     dynamic body = json.decode(response.body);
     AccountController accountController = Get.find<AccountController>();
@@ -71,7 +87,6 @@ Future<void> auth(String email, String password, int type) async {
       accountController.admtech = AdmTech.fromJson(body['user']);
     }
 
-    hideLoading();
     showAlert('sucesso', 'autenticação realizada com sucesso!', 'success');
 
     Get.put(accountController);
@@ -103,12 +118,10 @@ Future<void> auth(String email, String password, int type) async {
 
     return;
   } else if (response.statusCode == 401) {
-    hideLoading();
     showAlert('erro de autenticação',
         'email ou senha incorretos, por favor, tente novamente!', 'error');
     return;
   } else if (response.statusCode == 500) {
-    hideLoading();
     showAlert(
         'erro de conexão',
         'não foi possível conectar ao servidor, tente novamente mais tarde!',
@@ -116,7 +129,6 @@ Future<void> auth(String email, String password, int type) async {
     return;
   }
 
-  hideLoading();
   showAlert('erro desconhecido',
       'ocorreu um erro desconhecido, por favor, tente novamente!', 'error');
   return;

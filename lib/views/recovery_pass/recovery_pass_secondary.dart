@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'package:unifit/components/button.dart';
 import 'package:unifit/components/input.dart';
 import 'package:unifit/constants.dart';
-import 'package:unifit/services/verify_code.service.dart';
+import 'package:unifit/utils/alert.dart';
+
+import '../../controllers/recovery_pass_controller.dart';
 
 class RecoveryPassSecondaryPage extends StatefulWidget {
   const RecoveryPassSecondaryPage({super.key});
@@ -14,6 +17,23 @@ class RecoveryPassSecondaryPage extends StatefulWidget {
 }
 
 class _RecoveryPassSecondaryPage extends State<RecoveryPassSecondaryPage> {
+  void verifyCode(String code) {
+    if (code.isEmpty) {
+      showAlert('campos inválidos', 'preencha todos os campos!', 'error');
+      return;
+    }
+
+    RecoveryPassController recoveryPassController =
+        Get.find<RecoveryPassController>();
+
+    if (code == recoveryPassController.code) {
+      Get.toNamed('/recovery-pass-tertiary');
+    } else {
+      showAlert(
+          'código inválido', 'verifique o código e tente novamente!', 'error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     String code = '';
@@ -70,10 +90,11 @@ class _RecoveryPassSecondaryPage extends State<RecoveryPassSecondaryPage> {
               ),
               const SizedBox(height: defaultMarginLarge),
               ButtonPrimary(
-                  hintText: 'verificar código',
-                  onPressed: () {
-                    verifyCode(code);
-                  }),
+                hintText: 'verificar código',
+                onPressed: () {
+                  verifyCode(code);
+                },
+              ),
             ],
           ),
         ),

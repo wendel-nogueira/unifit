@@ -5,9 +5,6 @@ import 'package:unifit/components/page.dart';
 import 'package:unifit/components/student_card.dart';
 import 'package:unifit/constants.dart';
 import 'package:unifit/controllers/account_controller.dart';
-import 'package:unifit/models/adm_tech.dart';
-import 'package:unifit/models/teacher.dart';
-import 'package:unifit/models/user.dart';
 import 'package:unifit/services/create_frequency.dart';
 import 'package:unifit/services/delete_student.dart';
 import 'package:unifit/services/delete_teacher.dart';
@@ -39,14 +36,85 @@ class _UserListScreen extends State<UserListScreen> {
     super.initState();
 
     if (mounted) {
-      var accountController = Get.find<AccountController>();
+      loadingUsers();
+    }
+  }
 
-      var type = accountController.type!;
-      String token = accountController.token!;
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
-      loadingStudents = true;
+  void loadingUsers() {
+    var accountController = Get.find<AccountController>();
 
-      getStudents(token).then(
+    var id = accountController.type == 1
+        ? accountController.teacher!.idProfessor
+        : accountController.type == 2
+            ? accountController.admtech!.idTecnicoAdministrativo
+            : -1;
+    var type = accountController.type!;
+    String token = accountController.token!;
+
+    loadingStudents = true;
+
+    setState(() {
+      users = [];
+      usersFiltered = [];
+    });
+
+    getStudents(token).then(
+      (value) => {
+        if (mounted)
+          setState(
+            () {
+              var allUsers = [];
+
+              for (var element in value) {
+                var user = {
+                  'id': element.idAluno,
+                  'matricula': element.matricula,
+                  'nome': element.nome,
+                  'curso': element.curso,
+                  'nascimento': element.nascimento,
+                  'tipo': 'aluno',
+                };
+
+                allUsers.add(
+                  user,
+                );
+              }
+
+              allUsers.sort(
+                (a, b) {
+                  return a['matricula'].compareTo(b['matricula']);
+                },
+              );
+
+              for (var element in allUsers) {
+                users.add(
+                  element,
+                );
+              }
+
+              users.sort(
+                (a, b) {
+                  return a['tipo'].compareTo(b['tipo']);
+                },
+              );
+
+              usersFiltered = users;
+
+              loadingStudents = false;
+            },
+          )
+      },
+    );
+
+    if (type == 1) {
+      loadingTeachers = true;
+
+      getTeachers(token).then(
         (value) => {
           if (mounted)
             setState(
@@ -54,13 +122,17 @@ class _UserListScreen extends State<UserListScreen> {
                 var allUsers = [];
 
                 for (var element in value) {
+                  if (type == 1 && element.idProfessor == id) {
+                    continue;
+                  }
+
                   var user = {
-                    'id': element.idAluno,
-                    'matricula': element.matricula,
+                    'id': element.idProfessor,
+                    'matricula': element.idProfessor.toString(),
                     'nome': element.nome,
-                    'curso': element.curso,
                     'nascimento': element.nascimento,
-                    'tipo': 'aluno',
+                    'curso': 'N/A',
+                    'tipo': 'professor',
                   };
 
                   allUsers.add(
@@ -88,137 +160,96 @@ class _UserListScreen extends State<UserListScreen> {
 
                 usersFiltered = users;
 
-                loadingStudents = false;
+                loadingTeachers = false;
               },
             )
         },
       );
 
-      if (type == 1) {
-        loadingTeachers = true;
+      loadingAdmins = true;
+      getTecAdm(token).then(
+        (value) => {
+          if (mounted)
+            setState(
+              () {
+                var allUsers = [];
 
-        getTeachers(token).then(
-          (value) => {
-            if (mounted)
-              setState(
-                () {
-                  var allUsers = [];
-
-                  for (var element in value) {
-                    var user = {
-                      'id': element.idProfessor,
-                      'matricula': element.idProfessor.toString(),
-                      'nome': element.nome,
-                      'nascimento': element.nascimento,
-                      'curso': 'N/A',
-                      'tipo': 'professor',
-                    };
-
-                    allUsers.add(
-                      user,
-                    );
+                for (var element in value) {
+                  if (type == 2 && element.idTecnicoAdministrativo == id) {
+                    continue;
                   }
 
-                  allUsers.sort(
-                    (a, b) {
-                      return a['matricula'].compareTo(b['matricula']);
-                    },
+                  var user = {
+                    'id': element.idTecnicoAdministrativo,
+                    'matricula': element.idTecnicoAdministrativo.toString(),
+                    'nome': element.nome,
+                    'nascimento': element.nascimento,
+                    'curso': 'N/A',
+                    'tipo': 'tec',
+                  };
+
+                  allUsers.add(
+                    user,
                   );
+                }
 
-                  for (var element in allUsers) {
-                    users.add(
-                      element,
-                    );
-                  }
+                allUsers.sort(
+                  (a, b) {
+                    return a['matricula'].compareTo(b['matricula']);
+                  },
+                );
 
-                  users.sort(
-                    (a, b) {
-                      return a['tipo'].compareTo(b['tipo']);
-                    },
+                for (var element in allUsers) {
+                  users.add(
+                    element,
                   );
+                }
 
-                  usersFiltered = users;
+                users.sort(
+                  (a, b) {
+                    return a['tipo'].compareTo(b['tipo']);
+                  },
+                );
 
-                  loadingTeachers = false;
-                },
-              )
-          },
-        );
+                usersFiltered = users;
 
-        loadingAdmins = true;
-        getTecAdm(token).then(
-          (value) => {
-            if (mounted)
-              setState(
-                () {
-                  var allUsers = [];
-
-                  for (var element in value) {
-                    var user = {
-                      'id': element.idTecnicoAdministrativo,
-                      'matricula': element.idTecnicoAdministrativo.toString(),
-                      'nome': element.nome,
-                      'nascimento': element.nascimento,
-                      'curso': 'N/A',
-                      'tipo': 'tec',
-                    };
-
-                    allUsers.add(
-                      user,
-                    );
-                  }
-
-                  allUsers.sort(
-                    (a, b) {
-                      return a['matricula'].compareTo(b['matricula']);
-                    },
-                  );
-
-                  for (var element in allUsers) {
-                    users.add(
-                      element,
-                    );
-                  }
-
-                  users.sort(
-                    (a, b) {
-                      return a['tipo'].compareTo(b['tipo']);
-                    },
-                  );
-
-                  usersFiltered = users;
-
-                  loadingAdmins = false;
-                },
-              )
-          },
-        );
-      } else {
-        loadingTeachers = false;
-        loadingAdmins = false;
-      }
+                loadingAdmins = false;
+              },
+            )
+        },
+      );
+    } else {
+      loadingTeachers = false;
+      loadingAdmins = false;
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  void delete(int id, String tipo) async {
+    Get.back();
 
-  void delete(int id, String tipo) {
     var accountController = Get.find<AccountController>();
     var token = accountController.token!;
 
+    setState(() {
+      loadingStudents = true;
+      loadingTeachers = true;
+      loadingAdmins = true;
+    });
+
     if (tipo == 'aluno') {
-      deleteStudent(token, id);
+      await deleteStudent(token, id);
     } else if (tipo == 'professor') {
-      deleteTeacher(token, id);
+      await deleteTeacher(token, id);
     } else if (tipo == 'tec') {
-      deleteTecadm(token, id);
+      await deleteTecadm(token, id);
     }
+
+    loadingUsers();
   }
 
   void deleteUser(int id, String tipo) {
+    Get.back();
+
     var width = MediaQuery.of(context).size.width;
 
     var dialogSize = width - 2 * defaultPadding;
@@ -256,7 +287,6 @@ class _UserListScreen extends State<UserListScreen> {
               const SizedBox(height: 24),
               TextButton(
                 onPressed: () => {
-                  Get.back(),
                   delete(id, tipo),
                 },
                 style: ButtonStyle(
@@ -699,7 +729,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                         'frequência do aluno',
                                                     type: ButtonType.info,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       Get.toNamed(
                                                           "/student-frequency/${usersFiltered[index]['id']}"),
                                                     },
@@ -713,7 +744,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                     hintText: 'fichas do aluno',
                                                     type: ButtonType.info,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       Get.toNamed(
                                                           "/student-sheets/${usersFiltered[index]['id']}"),
                                                     },
@@ -728,7 +760,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                         'avaliações do aluno',
                                                     type: ButtonType.info,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       Get.toNamed(
                                                           "/user-physical-assessments/${usersFiltered[index]['id']}"),
                                                     },
@@ -743,9 +776,10 @@ class _UserListScreen extends State<UserListScreen> {
                                                         'anamnese do aluno',
                                                     type: ButtonType.info,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       Get.toNamed(
-                                                          "/new-user-anamnesis/${usersFiltered[index]['id']}"),
+                                                          "/view-user-anamnesis/${usersFiltered[index]['id']}"),
                                                     },
                                                   )
                                                 : Container(),
@@ -758,7 +792,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                     hintText: 'atualizar',
                                                     type: ButtonType.success,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       Get.toNamed(
                                                           "/edit-user/${usersFiltered[index]['tipo']}/${usersFiltered[index]['id']}"),
                                                     },
@@ -773,7 +808,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                     hintText: 'desativar',
                                                     type: ButtonType.warning,
                                                     onPressed: () => {
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                       deleteUser(
                                                           usersFiltered[index]
                                                               ['id'],
@@ -793,7 +829,8 @@ class _UserListScreen extends State<UserListScreen> {
                                                       registerFrequency(
                                                           usersFiltered[index]
                                                               ['id']),
-                                                      Get.back(),
+                                                      Get.back(
+                                                          closeOverlays: true),
                                                     },
                                                   )
                                                 : Container(),

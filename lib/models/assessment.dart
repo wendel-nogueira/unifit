@@ -18,7 +18,6 @@ class Assessment {
   String abdominal;
   String triceps;
   String axilar;
-  String coxa;
   String biceps;
   String supraIliaca;
   String panturrilha;
@@ -44,7 +43,6 @@ class Assessment {
     this.abdominal = '',
     this.triceps = '',
     this.axilar = '',
-    this.coxa = '',
     this.biceps = '',
     this.supraIliaca = '',
     this.panturrilha = '',
@@ -72,7 +70,6 @@ class Assessment {
       abdominal: json['abdominal'].toString(),
       triceps: json['triceps'].toString(),
       axilar: json['axilar'].toString(),
-      coxa: json['coxa'].toString(),
       biceps: json['biceps'].toString(),
       supraIliaca: json['supra_iliaca'].toString(),
       panturrilha: json['panturrilha'].toString(),
@@ -99,7 +96,6 @@ class Assessment {
         'abdominal': abdominal,
         'triceps': triceps,
         'axilar': axilar,
-        'coxa': coxa,
         'biceps': biceps,
         'supra_iliaca': supraIliaca,
         'panturrilha': panturrilha,
@@ -111,154 +107,147 @@ class Assessment {
     return [
       {
         'atribute': 'peso',
-        'label': 'Peso',
+        'label': 'Peso (kg)',
         'value': peso,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'altura',
-        'label': 'Altura',
+        'label': 'Altura (cm)',
         'value': altura,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'torax',
-        'label': 'Tórax',
+        'label': 'Tórax (cm)',
         'value': torax,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'cintura',
-        'label': 'Cintura',
+        'label': 'Cintura (cm)',
         'value': cintura,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'abdomen',
-        'label': 'Abdômen',
+        'label': 'Abdômen (cm)',
         'value': abdomen,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'braco_esquerdo',
-        'label': 'Braço Esquerdo',
+        'label': 'Braço Esquerdo (cm)',
         'value': bracoEsquerdo,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'braco_direito',
-        'label': 'Braço Direito',
+        'label': 'Braço Direito (cm)',
         'value': bracoDireito,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'antebraco_esquerdo',
-        'label': 'Antebraço Esquerdo',
+        'label': 'Antebraço Esquerdo (cm)',
         'value': antebracoEsquerdo,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'antebraco_direito',
-        'label': 'Antebraço Direito',
+        'label': 'Antebraço Direito (cm)',
         'value': antebracoDireito,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'coxa_direito',
-        'label': 'Coxa Direita',
+        'label': 'Coxa Direita (cm)',
         'value': coxaDireito,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'coxa_esquerdo',
-        'label': 'Coxa Esquerda',
+        'label': 'Coxa Esquerda (cm)',
         'value': coxaEsquerdo,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'perna_direito',
-        'label': 'Perna Direita',
+        'label': 'Perna Direita (cm)',
         'value': pernaDireito,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'perna_esquerdo',
-        'label': 'Perna Esquerda',
+        'label': 'Perna Esquerda (cm)',
         'value': pernaEsquerdo,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'sunescapular',
-        'label': 'Sunescaular',
+        'label': 'Sunescaular (cm)',
         'value': sunescapular,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'toracica',
-        'label': 'Torácica',
+        'label': 'Torácica (cm)',
         'value': toracica,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'abdominal',
-        'label': 'Abdominal',
+        'label': 'Abdominal (cm)',
         'value': abdominal,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'triceps',
-        'label': 'Tríceps',
+        'label': 'Tríceps (cm)',
         'value': triceps,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'axilar',
-        'label': 'Axilar',
+        'label': 'Axilar (cm)',
         'value': axilar,
         'type': 'number',
         'required': true,
       },
       {
-        'atribute': 'coxa',
-        'label': 'Coxa',
-        'value': coxa,
-        'type': 'number',
-        'required': true,
-      },
-      {
         'atribute': 'biceps',
-        'label': 'Bíceps',
+        'label': 'Bíceps (cm)',
         'value': biceps,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'supra_iliaca',
-        'label': 'Supra Ilíaca',
+        'label': 'Supra Ilíaca (cm)',
         'value': supraIliaca,
         'type': 'number',
         'required': true,
       },
       {
         'atribute': 'panturrilha',
-        'label': 'Panturrilha',
+        'label': 'Panturrilha (cm)',
         'value': panturrilha,
         'type': 'number',
         'required': true,
@@ -267,8 +256,8 @@ class Assessment {
         'atribute': 'abdominal_resistencia',
         'label': 'Abdominal Resistência',
         'value': abdominalResistencia,
-        'type': 'text',
-        'length': 45,
+        'type': 'select',
+        'options': ['fraca', 'leve', 'média', 'alta', 'muito alta'],
         'required': true,
       },
     ];
@@ -329,9 +318,6 @@ class Assessment {
         break;
       case 'axilar':
         axilar = value;
-        break;
-      case 'coxa':
-        coxa = value;
         break;
       case 'biceps':
         biceps = value;

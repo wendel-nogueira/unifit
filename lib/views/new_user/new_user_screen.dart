@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:unifit/models/adm_tech.dart';
 import 'package:unifit/models/teacher.dart';
+import 'package:unifit/services/get_students.dart';
+import 'package:unifit/services/get_teachers.dart';
+import 'package:unifit/services/get_tecadm.dart';
 import 'package:unifit/utils/alert.dart';
 
 import '../../components/page.dart';
@@ -31,6 +34,10 @@ class _NewUserScreen extends State<NewUserScreen> {
   var fields = [];
   bool loadingFields = false;
 
+  List<User> students = [];
+  List<Teacher> teachers = [];
+  List<AdmTech> admTechs = [];
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +45,7 @@ class _NewUserScreen extends State<NewUserScreen> {
     if (mounted) {
       setState(() {
         var queryParams = Get.parameters;
+        var token = accountController.token!;
 
         if (queryParams['type'] != null) {
           type = queryParams['type'] == 'student'
@@ -48,10 +56,40 @@ class _NewUserScreen extends State<NewUserScreen> {
 
           if (type == AccountType.student) {
             fields = newUser.getFormFields();
+
+            getStudents(token).then(
+              (value) => {
+                setState(
+                  () {
+                    students = value;
+                  },
+                ),
+              },
+            );
           } else if (type == AccountType.teacher) {
             fields = newTeacher.getFormFields();
+
+            getTeachers(token).then(
+              (value) => {
+                setState(
+                  () {
+                    teachers = value;
+                  },
+                ),
+              },
+            );
           } else if (type == AccountType.admin) {
             fields = newAdmTech.getFormFields();
+
+            getTecAdm(token).then(
+              (value) => {
+                setState(
+                  () {
+                    admTechs = value;
+                  },
+                ),
+              },
+            );
           }
         }
       });
@@ -70,6 +108,28 @@ class _NewUserScreen extends State<NewUserScreen> {
             ? newTeacher.getFormFields()
             : newAdmTech.getFormFields();
 
+    var emailExists = false;
+
+    if (type == AccountType.student) {
+      emailExists = students.any((element) => element.email == newUser.email);
+    } else if (type == AccountType.teacher) {
+      emailExists =
+          teachers.any((element) => element.email == newTeacher.email);
+    } else {
+      emailExists =
+          admTechs.any((element) => element.email == newAdmTech.email);
+    }
+
+    if (emailExists) {
+      showAlert(
+        'erro',
+        'o e-mail informado já está cadastrado!',
+        'error',
+      );
+
+      return false;
+    }
+
     for (var field in fieldsValidator) {
       if (field['value'] == null || field['value'] == '') {
         showAlert(
@@ -87,6 +147,41 @@ class _NewUserScreen extends State<NewUserScreen> {
         showAlert(
           'erro',
           'o campo ${field['label']} deve ter entre 3 e ${field['length']} caracteres!',
+          'error',
+        );
+
+        return false;
+      }
+
+      const regexNotNumber = r'^[a-zA-Z]+$';
+      const regexEmail = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
+
+      if (field['atribute'] == 'nome' &&
+          !RegExp(regexNotNumber).hasMatch(field['value'])) {
+        showAlert(
+          'erro',
+          'o campo ${field['label']} não pode conter números!',
+          'error',
+        );
+
+        return false;
+      }
+
+      if (field['atribute'] == 'senha' && field['value'].length < 8) {
+        showAlert(
+          'erro',
+          'o campo ${field['label']} deve ter no mínimo 8 caracteres!',
+          'error',
+        );
+
+        return false;
+      }
+
+      if (field['atribute'] == 'email' &&
+          !RegExp(regexEmail).hasMatch(field['value'])) {
+        showAlert(
+          'erro',
+          'o campo ${field['label']} deve ser um e-mail válido!',
           'error',
         );
 
