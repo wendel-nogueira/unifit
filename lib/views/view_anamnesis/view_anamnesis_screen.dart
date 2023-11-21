@@ -21,13 +21,12 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
   int studentId = -1;
   User? student;
   Anamnesis anamnesis = Anamnesis();
+  bool anamnesisExists = false;
   bool loadingStudent = true;
   bool loadingAnamnesis = true;
 
   var accountController = Get.find<AccountController>();
   bool loading = false;
-
-  bool newAnamnesis = false;
 
   @override
   void initState() {
@@ -60,7 +59,11 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
                         if (mounted)
                           setState(
                             () {
-                              anamnesis = value;
+                              if (value != null) {
+                                anamnesis = value;
+                                anamnesisExists = true;
+                              }
+
                               loadingAnamnesis = false;
                             },
                           ),
@@ -146,7 +149,7 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
                                               fontSize: 16,
                                               fontWeight: FontWeight.w400,
                                             ),
-                                            readOnly: !newAnamnesis,
+                                            readOnly: true,
                                             decoration: InputDecoration(
                                               floatingLabelBehavior:
                                                   FloatingLabelBehavior.never,
@@ -178,16 +181,7 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
                                                   horizontal:
                                                       defaultPaddingFieldsHorizontal),
                                             ),
-                                            onChanged: newAnamnesis
-                                                ? (value) {
-                                                    setState(() {
-                                                      anamnesis.updateValue(
-                                                          fields[index]
-                                                              ['atribute'],
-                                                          value);
-                                                    });
-                                                  }
-                                                : null,
+                                            onChanged: null,
                                           )
                                         : DropdownButtonFormField(
                                             decoration: InputDecoration(
@@ -284,7 +278,7 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
     return MasterPage(
       title: 'anamnese',
       showMenu: false,
-      backButtonFunction: () => Get.offAndToNamed('/students-list'),
+      backButtonFunction: () => Get.offAllNamed('/students-list'),
       child: Column(
         children: [
           Container(
@@ -307,134 +301,135 @@ class _ViewAnamnesisScreen extends State<ViewAnamnesisScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                        Text(
-                          'nome: ${student != null ? student!.nome : 'erro'}',
-                          style: GoogleFonts.manrope(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                            color: fontColorGray,
-                          ),
-                          textAlign: TextAlign.left,
+                      Text(
+                        'nome: ${student != null ? student!.nome : 'erro'}',
+                        style: GoogleFonts.manrope(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                          color: fontColorGray,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'curso: ${student != null ? student!.curso : ''}',
-                          style: GoogleFonts.manrope(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                            color: fontColorGray,
-                          ),
-                          textAlign: TextAlign.left,
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'curso: ${student != null ? student!.curso : ''}',
+                        style: GoogleFonts.manrope(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                          color: fontColorGray,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'email: ${student != null ? student!.email : ''}',
-                          style: GoogleFonts.manrope(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                            color: fontColorGray,
-                          ),
-                          textAlign: TextAlign.left,
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'email: ${student != null ? student!.email : ''}',
+                        style: GoogleFonts.manrope(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                          color: fontColorGray,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'nascimento: ${student != null ? verifyAbirthDateFormat(student!.nascimento.toString()) : ''}',
-                          style: GoogleFonts.manrope(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                            color: fontColorGray,
-                          ),
-                          textAlign: TextAlign.left,
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'nascimento: ${student != null ? verifyAbirthDateFormat(student!.nascimento.toString()) : ''}',
+                        style: GoogleFonts.manrope(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                          color: fontColorGray,
                         ),
-                        // divider
-                        const SizedBox(height: 12),
-                        !newAnamnesis
-                            ? TextButton(
-                                onPressed: () => {
-                                  Get.toNamed(
-                                    '/new-user-anamnesis/${student!.idAluno}',
-                                  ),
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          statusColorInfo),
-                                ),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    'nova anamnese',
-                                    style: GoogleFonts.roboto(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      color: fontColorWhite,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(),
-                      ])
+                        textAlign: TextAlign.left,
+                      ),
+                      // divider
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => {
+                          Get.toNamed(
+                            '/new-user-anamnesis/${student!.idAluno}',
+                          ),
+                        },
+                        style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(statusColorInfo),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            'nova anamnese',
+                            style: GoogleFonts.roboto(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: fontColorWhite,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                 : const Center(
                     child: CircularProgressIndicator(),
                   ),
           ),
           const SizedBox(height: 12),
           !loadingAnamnesis
-              ? SizedBox(
-                  width: width - 2 * defaultPadding,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: bgColorWhiteNormal,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(defaultRadiusSmall),
-                      ),
-                      boxShadow: [boxShadowDefault],
-                    ),
-                    margin: const EdgeInsets.only(bottom: defaultPadding / 2),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: defaultPaddingCardHorizontal,
-                              vertical: defaultPaddingCardVertical),
-                          child: Text(
-                            'anamnese',
-                            style: GoogleFonts.manrope(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 14,
-                              color: fontColorGray,
-                            ),
-                            textAlign: TextAlign.left,
+              ? anamnesisExists
+                  ? SizedBox(
+                      width: width - 2 * defaultPadding,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: bgColorWhiteNormal,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(defaultRadiusSmall),
                           ),
+                          boxShadow: [boxShadowDefault],
                         ),
-                        InkWell(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: defaultPaddingCardVertical,
-                                vertical: defaultPaddingCardVertical),
-                            decoration: const BoxDecoration(
-                              color: statusColorWarning,
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(defaultRadiusSmall),
+                        margin:
+                            const EdgeInsets.only(bottom: defaultPadding / 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: defaultPaddingCardHorizontal,
+                                  vertical: defaultPaddingCardVertical),
+                              child: Text(
+                                'anamnese',
+                                style: GoogleFonts.manrope(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                  color: fontColorGray,
+                                ),
+                                textAlign: TextAlign.left,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.remove_red_eye_outlined,
-                              color: fontColorWhite,
-                              size: 18,
+                            InkWell(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: defaultPaddingCardVertical,
+                                    vertical: defaultPaddingCardVertical),
+                                decoration: const BoxDecoration(
+                                  color: statusColorWarning,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(defaultRadiusSmall),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.remove_red_eye_outlined,
+                                  color: fontColorWhite,
+                                  size: 18,
+                                ),
+                              ),
+                              onTap: () => {
+                                showInfo(),
+                              },
                             ),
-                          ),
-                          onTap: () => {
-                            showInfo(),
-                          },
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                )
+                      ),
+                    )
+                  : const SizedBox()
               : const Center(
                   child: CircularProgressIndicator(),
                 ),

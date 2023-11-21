@@ -5,7 +5,7 @@ import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 import 'package:http/http.dart' as http;
 
-Future<Anamnesis> getAnamnesis(String token, int studentId) async {
+Future<Anamnesis?> getAnamnesis(String token, int studentId) async {
   String api = '$endpoint/anamnese/$studentId';
 
   var response = await http.get(Uri.parse(api), headers: {
@@ -26,28 +26,29 @@ Future<Anamnesis> getAnamnesis(String token, int studentId) async {
     },
   );
 
-  Anamnesis anamnesis = Anamnesis();
-
   if (response.statusCode == 200) {
     dynamic body = json.decode(response.body);
 
     if (body != null && body.isNotEmpty) {
+      Anamnesis anamnesis = Anamnesis();
       anamnesis = Anamnesis.fromJson(body.last);
+
+      return anamnesis;
     }
 
-    return anamnesis;
+    return null;
   } else if (json.decode(response.body)['message'] ==
       'Token de autenticação inválido') {
     showAlert('sessão expirada',
         'sua sessão expirou, por favor, faça login novamente!', 'error');
 
-    return anamnesis;
+    return null;
   } else {
     showAlert(
         'erro de conexão',
         'não foi possível conectar ao servidor, tente novamente mais tarde!',
         'error');
 
-    return anamnesis;
+    return null;
   }
 }

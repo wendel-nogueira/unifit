@@ -1,1 +1,2 @@
-const endpoint = 'https://cdd9-177-124-22-114.ngrok-free.app';
+const endpoint =
+    'http://ec2-15-229-48-131.sa-east-1.compute.amazonaws.com:3000';

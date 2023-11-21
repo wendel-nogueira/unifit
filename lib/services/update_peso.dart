@@ -4,23 +4,22 @@ import 'package:http/http.dart' as http;
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> updateAssessment(String token, int id, double peso) async {
-  String api = '$endpoint/avaliacao';
+Future<int> updatePeso(String token, int studentId, double peso) async {
+  String api = '$endpoint/alunos/$studentId/peso';
 
   Map<String, dynamic> body = {
-    'id': id.toString(),
-    'peso': peso.toString(),
+    'peso': peso,
   };
 
   var response = await http
       .patch(
     Uri.parse(api),
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     },
-    body: body,
+    body: json.encode(body),
   )
       .timeout(
     const Duration(seconds: 20),
@@ -40,8 +39,7 @@ Future<int> updateAssessment(String token, int id, double peso) async {
     showAlert('peso atualizado', 'peso atualizado com sucesso!', 'success');
 
     return 200;
-  } else if (json.decode(response.body)['message'] ==
-      'Token de autenticação inválido') {
+  } else if (response.statusCode == 401) {
     showAlert('sessão expirada',
         'sua sessão expirou, por favor, faça login novamente!', 'error');
 
@@ -49,7 +47,7 @@ Future<int> updateAssessment(String token, int id, double peso) async {
   } else {
     showAlert(
         'erro ao atualizar peso',
-        'não foi possível atualizar o peso, tente novamente mais tarde!',
+        'não foi possível atualizar o peso, verifique os dados e tente novamente!',
         'error');
 
     return 500;

@@ -131,7 +131,9 @@ class _NewUserScreen extends State<NewUserScreen> {
     }
 
     for (var field in fieldsValidator) {
-      if (field['value'] == null || field['value'] == '') {
+      if (field['required'] != null &&
+          (field['value'] == null || field['value'] == '')) {
+        print(field['required'] != null);
         showAlert(
           'erro',
           'todos os campos são obrigatórios!',
@@ -141,7 +143,8 @@ class _NewUserScreen extends State<NewUserScreen> {
         return false;
       }
 
-      if (field['type'] == 'text' &&
+      if (field['required'] != null &&
+          field['type'] == 'text' &&
           (field['value'].length < 3 ||
               field['value'].length > field['length'])) {
         showAlert(
@@ -153,7 +156,7 @@ class _NewUserScreen extends State<NewUserScreen> {
         return false;
       }
 
-      const regexNotNumber = r'^[a-zA-Z]+$';
+      const regexNotNumber = r'^[a-zA-ZÀ-ÿ ]+$';
       const regexEmail = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
 
       if (field['atribute'] == 'nome' &&
@@ -224,7 +227,7 @@ class _NewUserScreen extends State<NewUserScreen> {
                   loading = false;
                 },
               ),
-              if (value == 201) Get.toNamed('/students-list'),
+              if (value == 201) Get.offAllNamed('/students-list'),
             },
           )
           .catchError(
@@ -265,6 +268,7 @@ class _NewUserScreen extends State<NewUserScreen> {
               ? 'novo professor'
               : 'novo téc. adm.',
       showMenu: false,
+      backButtonFunction: () => Get.offAllNamed('/students-list'),
       child: Column(
         children: <Widget>[
           Container(

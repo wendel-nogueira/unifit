@@ -216,12 +216,6 @@ class _MySheetsScreen extends State<MySheetsScreen> {
                                               color: fontColorBlue,
                                             ),
                                           ),
-                                          // icon dots
-                                          const Icon(
-                                            Icons.more_vert,
-                                            color: fontColorBlue,
-                                            size: 16,
-                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 12),

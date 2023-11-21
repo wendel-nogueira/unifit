@@ -5,6 +5,7 @@ class Exercise {
   String dica;
   String imagepath;
   double peso;
+  double cargaMaxima;
 
   Exercise({
     this.idexercicio = -1,
@@ -13,6 +14,7 @@ class Exercise {
     this.dica = '',
     this.imagepath = '',
     this.peso = 0.0,
+    this.cargaMaxima = 0.0,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Exercise {
       dica: json['dica'],
       imagepath: json['imagepath'] ?? '',
       peso: json['peso'] ?? 0.0,
+      cargaMaxima: json['carga_maxima'] ?? 0.0,
     );
   }
 
@@ -33,5 +36,6 @@ class Exercise {
         'dica': dica,
         'imagepath': imagepath,
         'peso': peso.toString(),
+        'carga_maxima': cargaMaxima.toString(),
       };
 }

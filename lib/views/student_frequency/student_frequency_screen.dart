@@ -83,8 +83,17 @@ class _StudentFrequencyScreen extends State<StudentFrequencyScreen> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
 
+    AccountController accountController = Get.find<AccountController>();
+    var type = accountController.type;
+
     return MasterPage(
       title: 'frequência',
+      backButtonFunction: () => {
+        if (type == 1)
+          Get.offAllNamed('/students-list')
+        else
+          Get.offAllNamed('/my-sheets'),
+      },
       showMenu: false,
       child: Column(
         children: [

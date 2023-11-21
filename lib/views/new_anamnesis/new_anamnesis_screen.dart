@@ -141,7 +141,8 @@ class _NewAnamnesisScreen extends State<NewAnamnesisScreen> {
     return MasterPage(
       title: 'anamnese',
       showMenu: false,
-      backButtonFunction: () => Get.back(),
+      backButtonFunction: () =>
+          Get.offAllNamed('/view-user-anamnesis/$studentId'),
       child: Container(
         width: width - 2 * defaultPadding,
         height: height - 2 * defaultPadding - 64,

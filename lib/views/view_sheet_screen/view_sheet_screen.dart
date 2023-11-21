@@ -60,20 +60,6 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
 
         String token = accountController.token!;
 
-        getSheet(token, sheetId).then(
-          (value) => {
-            if (mounted)
-              setState(
-                () {
-                  if (sheetId != -1) {
-                    sheet = value;
-                    loading = false;
-                  }
-                },
-              )
-          },
-        );
-
         var type = accountController.type;
 
         if (type == 0) {
@@ -110,6 +96,8 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
 
                                   if (loan != null && loan['carga'] != null) {
                                     exercise.peso = loan['carga'].toDouble();
+                                    exercise.cargaMaxima =
+                                        double.parse(loan['carga_maxima']);
                                   }
                                 }
                               }
@@ -119,6 +107,20 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                           )
                         },
                       );
+                    }
+                  },
+                )
+            },
+          );
+        } else {
+          getSheet(token, sheetId).then(
+            (value) => {
+              if (mounted)
+                setState(
+                  () {
+                    if (sheetId != -1) {
+                      sheet = value;
+                      loading = false;
                     }
                   },
                 )
@@ -242,7 +244,8 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
     );
   }
 
-  int calculate1RM(int peso, int repeticoes, String nome) {
+  int calculate1RM(
+      int peso, int repeticoes, String nome, _CardContent cardContent) {
     var accountController = Get.find<AccountController>();
     var objetivo = accountController.user!.objetivo.toLowerCase();
     var objetivos = [
@@ -250,7 +253,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
       'força',
       'hipertrofia',
       'resistência',
-      'perda de peso'
+      'emagrecimento'
     ];
 
     if (!objetivos.contains(objetivo)) {
@@ -278,7 +281,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
       case 'resistência':
         coeficiente = 0.68;
         break;
-      case 'perda de peso':
+      case 'emagrecimento':
         coeficiente = 0.60;
         break;
       default:
@@ -300,7 +303,38 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
     var studentId = accountController.user!.idAluno;
 
     if (exercise != null) {
-      createCarga(token, studentId, exercise.idexercicio, result);
+      createCarga(token, studentId, exercise.idexercicio, result, 0)
+          .then((value) => {
+                getStudentLoad(token, studentId).then(
+                  (value) => {
+                    setState(
+                      () {
+                        loans = value;
+
+                        for (var element in sheet!.treinos) {
+                          for (var exercise in element.exercicios) {
+                            var loan = loans.firstWhere(
+                                (element) =>
+                                    element['exercicio_idexercicio'] ==
+                                    exercise.idexercicio,
+                                orElse: () => null);
+
+                            if (loan != null && loan['carga'] != null) {
+                              exercise.peso = loan['carga'].toDouble();
+                              exercise.cargaMaxima =
+                                  double.parse(loan['carga_maxima']);
+
+                              cardContent.updateCarga(exercise.peso);
+                              cardContent
+                                  .updateCargaMaxima(exercise.cargaMaxima);
+                            }
+                          }
+                        }
+                      },
+                    )
+                  },
+                )
+              });
     }
 
     return result;
@@ -396,7 +430,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                             decoration: TextDecoration.none,
                           ),
                           filled: true,
-                          fillColor: bgColorWhiteLight,
+                          fillColor: bgColorWhiteNormal,
                           hintText: 'informe a carga atual (kg)',
                           enabledBorder: const OutlineInputBorder(
                             borderRadius: borderRadiusSmall,
@@ -438,7 +472,6 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                           fontWeight: FontWeight.w400,
                         ),
                         inputFormatters: [
-                          // only numbers
                           FilteringTextInputFormatter.allow(RegExp(r'^\d+')),
                         ],
                         decoration: InputDecoration(
@@ -450,7 +483,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                             fontWeight: FontWeight.w400,
                           ),
                           filled: true,
-                          fillColor: bgColorWhiteLight,
+                          fillColor: bgColorWhiteNormal,
                           hintText: 'informe as repetições',
                           enabledBorder: const OutlineInputBorder(
                             borderRadius: borderRadiusSmall,
@@ -476,20 +509,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
               TextButton(
                 onPressed: () => {
                   setState(() {
-                    for (var element in sheet!.treinos) {
-                      if (element.exercicios
-                          .any((element) => element.nome == name)) {
-                        element.exercicios
-                                .firstWhere((element) => element.nome == name)
-                                .peso =
-                            double.parse(calculate1RM(peso, repeticoes, name)
-                                .toStringAsFixed(2));
-                      }
-                    }
-
-                    cardContent.updatePeso(double.parse(
-                        calculate1RM(peso, repeticoes, name)
-                            .toStringAsFixed(2)));
+                    calculate1RM(peso, repeticoes, name, cardContent);
 
                     Get.back();
                   })
@@ -502,6 +522,242 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                   width: width - 2 * defaultPadding,
                   child: Text(
                     'calcular',
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: fontColorWhite,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: defaultPaddingCardVertical / 2),
+              TextButton(
+                onPressed: () => {
+                  Get.back(),
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(statusColorError),
+                ),
+                child: SizedBox(
+                  width: width - 2 * defaultPadding,
+                  child: Text(
+                    'cancelar',
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: fontColorWhite,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  void setCarga(String name, int peso, _CardContent cardContent) {
+    if (peso == 0) {
+      showAlert(
+        'erro',
+        'erro ao definir a carga atual, verifique os dados e tente novamente!',
+        'error',
+      );
+
+      return;
+    }
+
+    var accountController = Get.find<AccountController>();
+    Exercise? exercise;
+
+    for (var element in sheet!.treinos) {
+      if (element.exercicios.any((element) => element.nome == name)) {
+        exercise =
+            element.exercicios.firstWhere((element) => element.nome == name);
+      }
+    }
+
+    var token = accountController.token!;
+    var studentId = accountController.user!.idAluno;
+
+    if (exercise != null) {
+      createCarga(token, studentId, exercise.idexercicio, 0, peso).then(
+        (value) => {
+          getStudentLoad(token, studentId).then(
+            (value) => {
+              setState(
+                () {
+                  loans = value;
+
+                  for (var element in sheet!.treinos) {
+                    for (var exercise in element.exercicios) {
+                      var loan = loans.firstWhere(
+                          (element) =>
+                              element['exercicio_idexercicio'] ==
+                              exercise.idexercicio,
+                          orElse: () => null);
+
+                      if (loan != null && loan['carga'] != null) {
+                        exercise.peso = loan['carga'].toDouble();
+                        exercise.cargaMaxima =
+                            double.parse(loan['carga_maxima']);
+
+                        cardContent.updateCarga(exercise.peso);
+                        cardContent.updateCargaMaxima(exercise.cargaMaxima);
+                      }
+                    }
+                  }
+                },
+              )
+            },
+          )
+        },
+      );
+    }
+  }
+
+  void changeCarga(String name, _CardContent cardContent) {
+    var width = MediaQuery.of(context).size.width;
+    var height = MediaQuery.of(context).size.height;
+
+    int peso = 0;
+
+    for (var element in sheet!.treinos) {
+      if (element.exercicios.any((element) => element.nome == name)) {
+        peso = element.exercicios
+            .firstWhere((element) => element.nome == name)
+            .peso
+            .toInt();
+      }
+    }
+
+    Get.dialog(
+      Center(
+        child: Container(
+          width: width,
+          height: height - 360,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.only(
+            top: defaultPadding,
+            bottom: defaultPadding,
+          ),
+          decoration: const BoxDecoration(
+            color: bgColorWhiteLight,
+            borderRadius: borderRadiusSmall,
+            boxShadow: [boxShadowDefault],
+          ),
+          child: Column(
+            children: [
+              Text(
+                name,
+                style: GoogleFonts.roboto(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  color: fontColorBlue,
+                  textStyle: const TextStyle(
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: defaultPaddingCardVertical),
+              Text(
+                'informe o campo abaixo para definir a carga atual!',
+                style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                  color: fontColorGray,
+                  textStyle: const TextStyle(
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: defaultPaddingCardVertical),
+              SizedBox(
+                width: width - 2 * defaultPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'carga atual (kg)',
+                      style: GoogleFonts.roboto(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: fontColorGray,
+                        decoration: TextDecoration.none,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                    const SizedBox(height: defaultMarginSmall),
+                    Material(
+                      color: Colors.transparent,
+                      child: TextFormField(
+                        initialValue: peso.toString(),
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.manrope(
+                          color: fontColorGray,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+\.?\d{0,2}')),
+                        ],
+                        decoration: InputDecoration(
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
+                          isDense: true,
+                          hintStyle: GoogleFonts.manrope(
+                            color: fontColorGray,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            decoration: TextDecoration.none,
+                          ),
+                          filled: true,
+                          fillColor: bgColorWhiteNormal,
+                          hintText: 'informe a carga atual (kg)',
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: borderRadiusSmall,
+                            borderSide: BorderSide(color: bgColorWhiteDark),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: borderRadiusSmall,
+                            borderSide: BorderSide(color: bgColorBlueNormal),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: defaultPaddingFieldsVertical,
+                              horizontal: defaultPaddingFieldsHorizontal),
+                        ),
+                        onChanged: (value) {
+                          if (value != '') peso = int.parse(value);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: defaultMarginSmall),
+              TextButton(
+                onPressed: () => {
+                  setState(() {
+                    setCarga(name, peso, cardContent);
+
+                    Get.back();
+                  })
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(statusColorInfo),
+                ),
+                child: SizedBox(
+                  width: width - 2 * defaultPadding,
+                  child: Text(
+                    'definir',
                     style: GoogleFonts.roboto(
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
@@ -744,7 +1000,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                                     .arrow_back_ios_outlined,
                                                                 color:
                                                                     fontColorBlue,
-                                                                size: 18,
+                                                                size: 24,
                                                               ),
                                                             ),
                                                           )
@@ -770,7 +1026,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                                     .arrow_forward_ios_outlined,
                                                                 color:
                                                                     fontColorBlue,
-                                                                size: 18,
+                                                                size: 24,
                                                               ),
                                                             ),
                                                           )
@@ -792,8 +1048,7 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                         SizedBox(
                                                           width: width -
                                                               2 * defaultPadding,
-                                                          height: height -
-                                                              246, // fixed height
+                                                          height: height - 246,
                                                           child:
                                                               ListView.builder(
                                                             itemCount: training[
@@ -892,7 +1147,22 @@ class _ViewSheetScreen extends State<ViewSheetScreen> {
                                                                                       ],
                                                                                     ),
                                                                                     const SizedBox(height: 12),
-                                                                                    CardContent(series: sheet!.series, repeticoes: sheet!.repeticoes, observacoes: sheet!.observacoes, peso: sheet!.treinos[index].exercicios.firstWhere((element) => element.nome == training[training.keys.elementAt(indexCol)][indexCol2]).peso, key: exerciseCart),
+                                                                                    CardContent(series: sheet!.series, repeticoes: sheet!.repeticoes, cargaMaxima: sheet!.treinos[index].exercicios.firstWhere((element) => element.nome == training[training.keys.elementAt(indexCol)][indexCol2]).peso, carga: sheet!.treinos[index].exercicios.firstWhere((element) => element.nome == training[training.keys.elementAt(indexCol)][indexCol2]).peso, key: exerciseCart),
+                                                                                    const SizedBox(height: 12),
+                                                                                    InkWell(
+                                                                                      onTap: () => {
+                                                                                        changeCarga(sheet!.treinos[index].exercicios.firstWhere((element) => element.nome == training[training.keys.elementAt(indexCol)][indexCol2]).nome, exerciseCart.currentState!),
+                                                                                      },
+                                                                                      child: Text(
+                                                                                        'definir carga atual',
+                                                                                        style: GoogleFonts.manrope(
+                                                                                          fontWeight: FontWeight.w400,
+                                                                                          fontSize: 16,
+                                                                                          color: fontColorBlue,
+                                                                                          decoration: TextDecoration.none,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
                                                                                     const SizedBox(height: 12),
                                                                                     InkWell(
                                                                                       onTap: () => {
@@ -1038,13 +1308,13 @@ class CardContent extends StatefulWidget {
       {super.key,
       required this.series,
       required this.repeticoes,
-      required this.observacoes,
-      required this.peso});
+      required this.carga,
+      required this.cargaMaxima});
 
   int series;
   int repeticoes;
-  String observacoes;
-  double peso;
+  double carga;
+  double cargaMaxima;
 
   @override
   State<CardContent> createState() => _CardContent();
@@ -1056,9 +1326,15 @@ class _CardContent extends State<CardContent> {
     super.initState();
   }
 
-  void updatePeso(double newPeso) {
+  void updateCarga(double newPeso) {
     setState(() {
-      widget.peso = newPeso;
+      widget.carga = newPeso;
+    });
+  }
+
+  void updateCargaMaxima(double newPeso) {
+    setState(() {
+      widget.cargaMaxima = newPeso;
     });
   }
 
@@ -1086,7 +1362,7 @@ class _CardContent extends State<CardContent> {
       ),
       const SizedBox(height: 6),
       Text(
-        'carga máxima (aprox): ${widget.peso}kg',
+        'carga máxima (aprox): ${widget.cargaMaxima}kg',
         style: GoogleFonts.manrope(
           fontWeight: FontWeight.w400,
           fontSize: 16,
@@ -1096,7 +1372,7 @@ class _CardContent extends State<CardContent> {
       ),
       const SizedBox(height: 6),
       Text(
-        'observações: ${widget.observacoes}',
+        'carga atual: ${widget.carga}kg',
         style: GoogleFonts.manrope(
           fontWeight: FontWeight.w400,
           fontSize: 16,

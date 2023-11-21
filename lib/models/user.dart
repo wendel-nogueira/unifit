@@ -14,6 +14,9 @@ class User {
   String sexo;
   String? observacao;
   String? senha;
+  double imc;
+  double peso;
+  int altura;
   List<Assessment> assessments = [];
   Anamnesis anamnesis = Anamnesis();
 
@@ -30,6 +33,9 @@ class User {
     this.sexo = '',
     this.observacao = '',
     this.senha,
+    this.imc = 0,
+    this.peso = 0,
+    this.altura = 0,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -46,6 +52,17 @@ class User {
       sexo: json['sexo'] ?? '',
       observacao: json['observacao'] ?? '',
       senha: json['senha'] ?? '',
+      imc: json['imc'] != null
+          ? json['imc'].runtimeType == String
+              ? double.parse(json['imc'])
+              : json['imc'] ?? 0
+          : 0,
+      peso: json['peso'] != null
+          ? json['peso'].runtimeType == String
+              ? double.parse(json['peso'])
+              : json['peso'] ?? 0
+          : 0,
+      altura: json['altura'] ?? 0,
     );
   }
 
@@ -57,11 +74,14 @@ class User {
         'curso': curso,
         'nascimento': nascimento!.toIso8601String(),
         'objetivo': objetivo,
-        'anoIngresso': anoIngresso.toString(),
+        'ano_ingresso': anoIngresso,
         'etnia': etnia,
         'sexo': sexo,
         'observacao': observacao,
         'senha': senha ?? '',
+        'imc': imc,
+        'peso': peso,
+        'altura': altura,
       };
 
   List<dynamic> getFormFields() {
@@ -158,11 +178,10 @@ class User {
         'value': objetivo,
         'type': 'select',
         'options': [
-          'Força pura',
-          'Força',
+          'Emagrecimento',
           'Hipertrofia',
+          'Força',
           'Resistência',
-          'Perda de peso'
         ],
         'required': true,
         'edit': true,
