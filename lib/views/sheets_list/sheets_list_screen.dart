@@ -241,12 +241,6 @@ class _SheetListScreen extends State<SheetListScreen> {
                                               color: fontColorBlue,
                                             ),
                                           ),
-                                          // icon dots
-                                          const Icon(
-                                            Icons.more_vert,
-                                            color: fontColorBlue,
-                                            size: 16,
-                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 12),

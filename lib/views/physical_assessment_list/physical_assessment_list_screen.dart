@@ -86,8 +86,9 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
     return MasterPage(
       title: accountType == 0 ? 'minhas avaliações' : 'avaliações',
       showMenu: false,
-      backButtonFunction:
-          accountType == 0 ? () => Get.toNamed('/my-sheets') : () => Get.back(),
+      backButtonFunction: accountType == 0
+          ? () => Get.offAllNamed('/my-sheets')
+          : () => Get.back(),
       child: Column(
         children: [
           Container(
@@ -246,7 +247,6 @@ class _PhysicalAssessmentList extends State<PhysicalAssessmentList> {
                                     ),
                                   ),
                                   onTap: () => {
-                                    // set body
                                     Get.toNamed('/view-physical-assessments',
                                         arguments: assessments[index]),
                                   },

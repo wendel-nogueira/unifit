@@ -90,7 +90,7 @@ class _RecoveryPassTertiaryPage extends State<RecoveryPassTertiaryPage> {
         else
           {
             showAlert('erro', 'email não encontrado!', 'error'),
-            Get.offAndToNamed('/login'),
+            Get.offAllNamed('/login'),
           }
       },
     );
@@ -103,7 +103,7 @@ class _RecoveryPassTertiaryPage extends State<RecoveryPassTertiaryPage> {
     }
 
     if (newPassword.length < 8 || repeatPassword.length < 8) {
-      showAlert('campos inválidos', 'a senha deve ter no mínimo 6 caracteres!',
+      showAlert('campos inválidos', 'a senha deve ter no mínimo 8 caracteres!',
           'error');
       return;
     }
@@ -127,7 +127,7 @@ class _RecoveryPassTertiaryPage extends State<RecoveryPassTertiaryPage> {
       (value) => {
         if (value == 200)
           {
-            Get.offAndToNamed('/login'),
+            Get.offAllNamed('/login'),
           },
         setState(() {
           send = false;

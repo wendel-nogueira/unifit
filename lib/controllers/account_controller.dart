@@ -46,6 +46,6 @@ class AccountController extends GetxController
       prefs.clear();
     });
 
-    Get.offNamed('/login');
+    Get.offAllNamed('/login');
   }
 }

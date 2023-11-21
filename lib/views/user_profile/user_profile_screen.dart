@@ -4,13 +4,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:unifit/constants.dart';
 import 'package:unifit/controllers/account_controller.dart';
-import 'package:unifit/models/assessment.dart';
-import 'package:unifit/services/get_Assessment.dart';
-import 'package:unifit/services/update_assessment.dart';
-
 import '../../components/page.dart';
-import '../../services/create_assessment.dart';
 import '../../services/send_feedback_email.service.dart';
+import '../../services/update_peso.dart';
 import '../../services/update_user.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -22,16 +18,11 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreen extends State<UserProfileScreen> {
   bool loading = false;
-  Assessment? assessment;
-  double imc = 0;
+  final account = Get.find<AccountController>();
 
   @override
   void initState() {
     super.initState();
-
-    if (mounted) {
-      getInfo();
-    }
   }
 
   @override
@@ -39,57 +30,43 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     super.dispose();
   }
 
-  void getInfo() {
-    setState(
-      () {
-        loading = true;
-
-        final account = Get.find<AccountController>();
-        final token = account.token!;
-
-        if (account.type == 0) {
-          final studentId = account.user!.idAluno;
-
-          getAssessment(token, studentId).then((value) {
-            var assessment = value.first;
-
-            setState(() {
-              this.assessment = assessment;
-              loading = false;
-            });
-
-            imc = double.parse(assessment.peso) /
-                ((double.parse(assessment.altura) / 100) *
-                    (double.parse(assessment.altura) / 100));
-          });
-        }
-      },
-    );
-  }
-
   void sendRequest(double peso, String objetivo) async {
     var token = Get.find<AccountController>().token!;
     var id = Get.find<AccountController>().user!.idAluno;
     var user = Get.find<AccountController>().user;
 
+    setState(() {
+      loading = true;
+    });
+
     if (objetivo != user!.objetivo) {
-      user.objetivo = objetivo;
+      setState(() {
+        account.user!.objetivo = objetivo;
+      });
 
       await updateUser(token, 'student', user, id);
     }
 
-    if (peso != double.parse(assessment!.peso)) {
-      await updateAssessment(token, assessment!.id, peso);
+    if (peso != user.peso) {
+      setState(() {
+        account.user!.peso = peso;
+        account.user!.imc = peso / ((user.altura / 100) * (user.altura / 100));
+      });
+
+      await updatePeso(token, id, peso);
     }
 
-    getInfo();
+    setState(() {
+      loading = false;
+    });
   }
 
   void showEdit() {
     var width = MediaQuery.of(context).size.width;
     var account = Get.find<AccountController>();
+    var user = Get.find<AccountController>().user;
 
-    double peso = double.parse(assessment!.peso);
+    double peso = user!.peso;
     String objetivo = account.user!.objetivo;
 
     var fields = account.user!.getFormFields();
@@ -470,7 +447,6 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final account = Get.find<AccountController>();
     final type = account.type!;
     final user = account.user;
     final teacher = account.teacher;
@@ -616,9 +592,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    assessment != null
-                                        ? '${assessment!.altura} cm'
-                                        : '',
+                                    '${user.altura} cm',
                                     style: GoogleFonts.roboto(
                                       fontWeight: FontWeight.w400,
                                       fontSize: 16,
@@ -642,9 +616,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    assessment != null
-                                        ? '${assessment!.peso} kg'
-                                        : '',
+                                    '${user.peso} kg',
                                     style: GoogleFonts.roboto(
                                       fontWeight: FontWeight.w400,
                                       fontSize: 16,
@@ -668,9 +640,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    assessment != null
-                                        ? imc.toStringAsFixed(2)
-                                        : '',
+                                    user.imc.toStringAsFixed(2),
                                     style: GoogleFonts.roboto(
                                       fontWeight: FontWeight.w400,
                                       fontSize: 16,

@@ -191,7 +191,7 @@ class _EditUserScreen extends State<EditUserScreen> {
                   loading = false;
                 },
               ),
-              if (value == 200) Get.toNamed('/students-list'),
+              if (value == 200) Get.offAllNamed('/students-list'),
             },
           )
           .catchError(
@@ -232,7 +232,7 @@ class _EditUserScreen extends State<EditUserScreen> {
               ? 'atualizar professor'
               : 'atualizar téc. adm.',
       showMenu: false,
-      backButtonFunction: () => Get.toNamed('/students-list'),
+      backButtonFunction: () => Get.offAllNamed('/students-list'),
       child: Column(
         children: <Widget>[
           loadingFields
@@ -505,7 +505,11 @@ class _EditUserScreen extends State<EditUserScreen> {
                                                       child: Text(option),
                                                     ),
                                                 ],
-                                                value: fields[index]['value'],
+                                                value: fields[index]['options']
+                                                        .contains(fields[index]
+                                                            ['value'])
+                                                    ? fields[index]['value']
+                                                    : null,
                                                 onChanged: (value) {
                                                   setState(
                                                     () {
@@ -607,7 +611,7 @@ class _EditUserScreen extends State<EditUserScreen> {
                 ),
                 TextButton(
                   onPressed: () => {
-                    Get.back(),
+                    Get.offAllNamed('/students-list'),
                   },
                   style: ButtonStyle(
                     backgroundColor:

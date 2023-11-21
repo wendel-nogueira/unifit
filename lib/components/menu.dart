@@ -32,6 +32,13 @@ class _MenuState extends State<Menu> {
           'icon': Icons.assessment_outlined,
         },
         {
+          'route': accountController.type == 0 && accountController.user != null
+              ? '/student-frequency/${accountController.user!.idAluno}'
+              : '/profile',
+          'text': 'minha frequência',
+          'icon': Icons.calendar_today_outlined,
+        },
+        {
           'route': '/profile',
           'text': 'meu perfil',
           'icon': Icons.person_outline,
@@ -90,10 +97,9 @@ class _MenuState extends State<Menu> {
                 children: [
                   InkWell(
                     onTap: () => {
-                      Get.offAllNamed(userRoutes[index]['route']),
                       if (activeRoute != userRoutes[index]['route'])
                         {
-                          Get.offNamed(userRoutes[index]['route']),
+                          Get.offAllNamed(userRoutes[index]['route']),
                         }
                     },
                     hoverColor: fontColorBlue,

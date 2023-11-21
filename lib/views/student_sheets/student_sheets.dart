@@ -168,9 +168,9 @@ class _StudentSheetScreen extends State<StudentSheetScreen> {
       title: 'fichas do aluno',
       backButtonFunction: () => {
         if (type == 1)
-          Get.toNamed('/students-list')
+          Get.offAllNamed('/students-list')
         else
-          Get.toNamed('/my-sheets'),
+          Get.offAllNamed('/my-sheets'),
       },
       showMenu: false,
       child: Column(

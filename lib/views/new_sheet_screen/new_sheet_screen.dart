@@ -142,7 +142,7 @@ class _NewSheetScreen extends State<NewSheetScreen> {
           loading = false;
 
           if (value == 200 || value == 201) {
-            Get.toNamed('/sheets-list');
+            Get.offAllNamed('/sheets-list');
           }
         });
       }).catchError((error) {
@@ -448,6 +448,7 @@ class _NewSheetScreen extends State<NewSheetScreen> {
 
     return MasterPage(
       title: 'nova ficha',
+      backButtonFunction: () => Get.offAllNamed('/sheets-list'),
       showMenu: false,
       child: SizedBox(
         width: width - 2 * defaultPadding,

@@ -1,16 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:unifit/utils/alert.dart';
 import 'package:unifit/config/config.dart';
 
-Future<int> createCarga(
-    String token, int studentId, int idexercicio, int carga) async {
+Future<int> createCarga(String token, int studentId, int idexercicio,
+    int cargaMaxima, int carga) async {
   String api = '$endpoint/carga';
 
   Map<String, dynamic> body = {
     'idexercicio': idexercicio.toString(),
     'idaluno': studentId.toString(),
+    'carga_maxima': cargaMaxima.toString(),
     'carga': carga.toString(),
   };
 
@@ -42,8 +42,7 @@ Future<int> createCarga(
     showAlert('carga registrada', 'carga registrada com sucesso!', 'success');
 
     return 201;
-  } else if (json.decode(response.body)['message'] ==
-      'Token de autenticação inválido') {
+  } else if (response.statusCode == 401) {
     showAlert('sessão expirada',
         'sua sessão expirou, por favor, faça login novamente!', 'error');
 

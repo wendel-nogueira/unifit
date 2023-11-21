@@ -129,7 +129,7 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                     const SizedBox(height: 24),
                     TextButton(
                       onPressed: () => {
-                        Get.offAndToNamed(
+                        Get.offAllNamed(
                           '/view-user-anamnesis/${studentId.toString()}',
                         ),
                       },
@@ -152,7 +152,7 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
                     ),
                     TextButton(
                       onPressed: () => {
-                        Get.toNamed(
+                        Get.offAllNamed(
                           '/user-physical-assessments/${studentId.toString()}',
                         ),
                       },
@@ -197,6 +197,8 @@ class _NewPhysicalAssessmentScreen extends State<NewPhysicalAssessmentScreen> {
 
     return MasterPage(
       title: 'nova avaliação',
+      backButtonFunction: () =>
+          Get.offAllNamed('/user-physical-assessments/$studentId'),
       showMenu: false,
       child: Column(
         children: <Widget>[
